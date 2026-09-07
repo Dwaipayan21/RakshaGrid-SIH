@@ -1,0 +1,395 @@
+{
+  "project": {
+    "name": "RakshaGrid-SIH",
+    "region": "Assam, India",
+    "purpose": "Multi-hazard disaster prediction, risk assessment and tactical response"
+  },
+
+  "hazards": {
+
+    "flood": {
+      "name": "Flood",
+      "priority": "very_high",
+      "agencies": [
+        "NRSC/ISRO",
+        "Central Water Commission",
+        "India Meteorological Department"
+      ],
+      "data_requirements": {
+        "historical": [
+          "flood_extent",
+          "flood_depth",
+          "historical_flood_events",
+          "flood_frequency"
+        ],
+        "weather": [
+          "rainfall_1h",
+          "rainfall_6h",
+          "rainfall_24h",
+          "rainfall_72h",
+          "forecast_rainfall"
+        ],
+        "hydrology": [
+          "river_level",
+          "river_level_change",
+          "river_discharge"
+        ],
+        "terrain": [
+          "elevation",
+          "slope",
+          "distance_to_river",
+          "distance_to_drainage"
+        ]
+      },
+      "ml_target": [
+        "flood_next_24h",
+        "flood_next_48h"
+      ]
+    },
+
+    "landslide": {
+      "name": "Landslide",
+      "priority": "very_high",
+      "agencies": [
+        "Geological Survey of India",
+        "NRSC/ISRO",
+        "India Meteorological Department"
+      ],
+      "data_requirements": {
+        "historical": [
+          "landslide_inventory",
+          "historical_landslide_events",
+          "landslide_susceptibility"
+        ],
+        "weather": [
+          "rainfall_1h",
+          "rainfall_6h",
+          "rainfall_24h",
+          "rainfall_72h"
+        ],
+        "terrain": [
+          "elevation",
+          "slope",
+          "aspect",
+          "land_use",
+          "lithology",
+          "distance_to_drainage"
+        ]
+      },
+      "ml_target": [
+        "landslide_next_24h"
+      ]
+    },
+
+    "forest_fire": {
+      "name": "Forest Fire",
+      "priority": "high",
+      "agencies": [
+        "Forest Survey of India",
+        "NRSC/ISRO",
+        "India Meteorological Department"
+      ],
+      "data_requirements": {
+        "historical": [
+          "historical_fire_events",
+          "fire_frequency",
+          "fire_hotspots"
+        ],
+        "weather": [
+          "temperature",
+          "humidity",
+          "wind_speed",
+          "rainfall"
+        ],
+        "environment": [
+          "forest_type",
+          "forest_cover",
+          "vegetation_index",
+          "fuel_load",
+          "fire_danger_rating"
+        ],
+        "terrain": [
+          "elevation",
+          "slope"
+        ]
+      },
+      "ml_target": [
+        "forest_fire_next_24h"
+      ]
+    },
+
+    "earthquake": {
+      "name": "Earthquake",
+      "priority": "high",
+      "agencies": [
+        "National Centre for Seismology"
+      ],
+      "data_requirements": {
+        "historical": [
+          "earthquake_events",
+          "magnitude",
+          "depth",
+          "epicentre"
+        ],
+        "exposure": [
+          "population",
+          "buildings",
+          "critical_infrastructure"
+        ],
+        "vulnerability": [
+          "building_type",
+          "building_age",
+          "seismic_zone"
+        ]
+      },
+      "ml_target": [
+        "expected_impact",
+        "damage_probability"
+      ]
+    },
+
+    "lightning": {
+      "name": "Lightning",
+      "priority": "high",
+      "agencies": [
+        "India Meteorological Department",
+        "NRSC/ISRO"
+      ],
+      "data_requirements": {
+        "historical": [
+          "historical_lightning_events",
+          "lightning_density"
+        ],
+        "current": [
+          "lightning_events",
+          "lightning_count",
+          "lightning_location"
+        ],
+        "weather": [
+          "temperature",
+          "humidity",
+          "rainfall",
+          "thunderstorm_activity"
+        ]
+      },
+      "ml_target": [
+        "lightning_next_1h"
+      ]
+    },
+
+    "cyclone": {
+      "name": "Cyclone",
+      "priority": "medium",
+      "agencies": [
+        "India Meteorological Department",
+        "NRSC/ISRO"
+      ],
+      "data_requirements": {
+        "historical": [
+          "cyclone_tracks",
+          "historical_cyclones"
+        ],
+        "forecast": [
+          "cyclone_track",
+          "cyclone_speed",
+          "cyclone_direction",
+          "maximum_wind",
+          "central_pressure"
+        ],
+        "impact": [
+          "rainfall",
+          "storm_surge",
+          "high_waves"
+        ]
+      },
+      "ml_target": [
+        "cyclone_impact_probability"
+      ]
+    },
+
+    "extreme_rainfall": {
+      "name": "Extreme Rainfall",
+      "priority": "very_high",
+      "agencies": [
+        "India Meteorological Department"
+      ],
+      "data_requirements": {
+        "historical": [
+          "historical_rainfall",
+          "extreme_rainfall_events"
+        ],
+        "current": [
+          "rainfall_1h",
+          "rainfall_6h",
+          "rainfall_24h"
+        ],
+        "forecast": [
+          "forecast_rainfall"
+        ]
+      },
+      "ml_target": [
+        "extreme_rainfall_next_24h"
+      ]
+    },
+
+    "thunderstorm": {
+      "name": "Thunderstorm",
+      "priority": "high",
+      "agencies": [
+        "India Meteorological Department"
+      ],
+      "data_requirements": {
+        "historical": [
+          "historical_thunderstorms"
+        ],
+        "weather": [
+          "temperature",
+          "humidity",
+          "wind_speed",
+          "rainfall",
+          "thunderstorm_probability"
+        ]
+      },
+      "ml_target": [
+        "thunderstorm_next_1h"
+      ]
+    },
+
+    "heatwave": {
+      "name": "Heat Wave",
+      "priority": "medium",
+      "agencies": [
+        "India Meteorological Department"
+      ],
+      "data_requirements": {
+        "historical": [
+          "historical_heatwave_events"
+        ],
+        "weather": [
+          "maximum_temperature",
+          "minimum_temperature",
+          "temperature_anomaly",
+          "humidity"
+        ]
+      },
+      "ml_target": [
+        "heatwave_next_24h"
+      ]
+    },
+
+    "coldwave": {
+      "name": "Cold Wave",
+      "priority": "medium",
+      "agencies": [
+        "India Meteorological Department"
+      ],
+      "data_requirements": {
+        "historical": [
+          "historical_coldwave_events"
+        ],
+        "weather": [
+          "minimum_temperature",
+          "temperature_anomaly",
+          "wind_speed"
+        ]
+      },
+      "ml_target": [
+        "coldwave_next_24h"
+      ]
+    },
+
+    "drought": {
+      "name": "Drought",
+      "priority": "medium",
+      "agencies": [
+        "NRSC/ISRO",
+        "India Meteorological Department",
+        "Government of India"
+      ],
+      "data_requirements": {
+        "historical": [
+          "historical_drought_events",
+          "rainfall_deficit"
+        ],
+        "environment": [
+          "soil_moisture",
+          "vegetation_index",
+          "temperature"
+        ]
+      },
+      "ml_target": [
+        "drought_condition"
+      ]
+    },
+
+    "cloudburst": {
+      "name": "Cloudburst",
+      "priority": "high",
+      "agencies": [
+        "India Meteorological Department",
+        "NRSC/ISRO"
+      ],
+      "data_requirements": {
+        "historical": [
+          "historical_cloudburst_events"
+        ],
+        "weather": [
+          "rainfall_intensity",
+          "short_duration_rainfall",
+          "forecast_rainfall"
+        ]
+      },
+      "ml_target": [
+        "cloudburst_next_24h"
+      ]
+    },
+
+    "storm_surge": {
+      "name": "Storm Surge",
+      "priority": "low",
+      "agencies": [
+        "NRSC/ISRO",
+        "India Meteorological Department",
+        "INCOIS"
+      ],
+      "data_requirements": {
+        "historical": [
+          "historical_storm_surge"
+        ],
+        "forecast": [
+          "storm_surge_height",
+          "cyclone_track",
+          "wind_speed"
+        ]
+      },
+      "ml_target": [
+        "storm_surge_impact"
+      ]
+    },
+
+    "tsunami": {
+      "name": "Tsunami",
+      "priority": "low",
+      "agencies": [
+        "INCOIS",
+        "NRSC/ISRO"
+      ],
+      "data_requirements": {
+        "historical": [
+          "historical_tsunami_events"
+        ],
+        "current": [
+          "earthquake_events",
+          "tsunami_warnings"
+        ],
+        "forecast": [
+          "tsunami_arrival_time",
+          "wave_height"
+        ]
+      },
+      "ml_target": [
+        "tsunami_impact"
+      ]
+    }
+  }
+}
