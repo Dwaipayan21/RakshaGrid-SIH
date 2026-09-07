@@ -1,0 +1,92 @@
+// Hardcoded demo data for the pilot district (Morigaon).
+// Coordinates below are approximate placeholders centered on each revenue
+// circle (the NRSC atlas gives village-level hazard classification but not
+// lat/lon - see project notes). Swap these for geocoded values once the
+// Census/OSM name-matching step is done.
+
+export const hazardZones = [
+  {
+    id: 'bhuragaon',
+    name: 'Bhuragaon Circle',
+    district: 'Morigaon',
+    subtitle: 'Flood Prone Sector',
+    lat: 26.2419,
+    lon: 92.2011,
+    hazardSeverity: 'Very High',
+    population: 8420,
+    vulnerablePopulation: 2960,
+    children: 1120,
+    elderly: 540,
+    pastIncidents: 7,
+    areaSqKm: 215.6,
+    compositeRiskScore: 0.87,
+    relocationPriority: 'IMMEDIATE ACTION REQUIRED',
+    priorityLevel: 'critical',
+    hazardImpact: {
+      floodFrequency: { label: 'Flood Frequency (1998-2023)', value: 94, tag: 'Very High' },
+      submergedArea: { label: 'Submerged Area %', value: 82, tag: 'High' },
+      floodWaveWeight: { label: 'Flood Wave Intensity', value: 78, tag: 'High' },
+      soilDrainage: { label: 'Soil Drainage Capacity', value: 22, tag: 'Critical / Low' },
+    },
+    nearbySites: [
+      { name: 'Jagiroad Relief Camp', tag: 'Relief Camp • R-04', distanceKm: 12.4, etaMin: 25, available: 620, total: 1000, suitability: 'High', lat: 26.118, lon: 92.342 },
+      { name: 'Morigaon Township Safe Zone', tag: 'Safe Zone Sector • H-02', distanceKm: 18.7, etaMin: 42, available: 1250, total: 1800, suitability: 'High', lat: 26.251, lon: 92.338 },
+      { name: 'Bokajan Area Shelter', tag: 'Shelter Site • B-09', distanceKm: 24.1, etaMin: 55, available: 430, total: 600, suitability: 'Moderate', lat: 26.040, lon: 92.450 },
+    ],
+  },
+  {
+    id: 'mayong',
+    name: 'Mayong Circle',
+    district: 'Morigaon',
+    subtitle: 'Riverine Flood Sector',
+    lat: 26.1503,
+    lon: 92.2606,
+    hazardSeverity: 'High',
+    population: 5340,
+    vulnerablePopulation: 1780,
+    children: 690,
+    elderly: 340,
+    pastIncidents: 5,
+    areaSqKm: 168.2,
+    compositeRiskScore: 0.71,
+    relocationPriority: 'PREPARE FOR EVACUATION',
+    priorityLevel: 'high',
+    hazardImpact: {
+      floodFrequency: { label: 'Flood Frequency (1998-2023)', value: 76, tag: 'High' },
+      submergedArea: { label: 'Submerged Area %', value: 64, tag: 'High' },
+      floodWaveWeight: { label: 'Flood Wave Intensity', value: 58, tag: 'Moderate' },
+      soilDrainage: { label: 'Soil Drainage Capacity', value: 38, tag: 'Low' },
+    },
+    nearbySites: [
+      { name: 'Mayong Higher Secondary Shelter', tag: 'Shelter Site • M-01', distanceKm: 6.8, etaMin: 15, available: 310, total: 450, suitability: 'High', lat: 26.160, lon: 92.245 },
+      { name: 'Jagiroad Relief Camp', tag: 'Relief Camp • R-04', distanceKm: 15.2, etaMin: 33, available: 620, total: 1000, suitability: 'Moderate', lat: 26.118, lon: 92.342 },
+    ],
+  },
+  {
+    id: 'laharighat',
+    name: 'Laharighat Circle',
+    district: 'Morigaon',
+    subtitle: 'Moderate Flood Sector',
+    lat: 26.2830,
+    lon: 92.4438,
+    hazardSeverity: 'Moderate',
+    population: 3120,
+    vulnerablePopulation: 940,
+    children: 380,
+    elderly: 210,
+    pastIncidents: 3,
+    areaSqKm: 141.4,
+    compositeRiskScore: 0.48,
+    relocationPriority: 'MONITOR & PREPARE',
+    priorityLevel: 'moderate',
+    hazardImpact: {
+      floodFrequency: { label: 'Flood Frequency (1998-2023)', value: 52, tag: 'Moderate' },
+      submergedArea: { label: 'Submerged Area %', value: 41, tag: 'Moderate' },
+      floodWaveWeight: { label: 'Flood Wave Intensity', value: 30, tag: 'Low' },
+      soilDrainage: { label: 'Soil Drainage Capacity', value: 55, tag: 'Moderate' },
+    },
+    nearbySites: [
+      { name: 'Laharighat Community Hall', tag: 'Shelter Site • L-02', distanceKm: 4.1, etaMin: 10, available: 180, total: 250, suitability: 'High', lat: 26.290, lon: 92.435 },
+    ],
+  },
+]
