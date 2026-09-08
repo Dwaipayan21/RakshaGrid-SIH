@@ -2,72 +2,129 @@ import React from 'react'
 import { Marker, Popup, Circle, Polyline, Tooltip } from 'react-leaflet'
 import L from 'leaflet'
 
-// Create custom L.divIcon for hazard zones with pulse animation
+// Creates a GIS-style location pin using Lucide's MapPin SVG path + plain colored text.
+// Absolutely NO card, border, background, or box around the name.
 const createHazardIcon = (zone, isSelected) => {
   const isCritical = zone.priorityLevel === 'critical'
   const isHigh = zone.priorityLevel === 'high'
 
-  const colorClass = isCritical
-    ? 'bg-red-500 text-red-100 border-red-300 shadow-red-500/50'
-    : isHigh
-    ? 'bg-amber-500 text-amber-950 border-amber-300 shadow-amber-500/50'
-    : 'bg-emerald-500 text-emerald-950 border-emerald-300 shadow-emerald-500/50'
+  // Danger-intensity color hex values
+  const pinColor = isCritical ? '#f87171'   // red-400
+    : isHigh                  ? '#fb923c'   // orange-400
+    :                           '#34d399'   // emerald-400
 
-  const pulseClass = isSelected
-    ? isCritical
-      ? 'animate-ping opacity-75 bg-red-500'
-      : isHigh
-      ? 'animate-ping opacity-75 bg-amber-500'
-      : 'animate-ping opacity-75 bg-emerald-400'
-    : ''
+  const displayName = zone.name.split(' ')[0]
 
+  // Lucide MapPin SVG paths (identical to <MapPin> from lucide-react)
+  const pinSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg"
+         width="14" height="14"
+         viewBox="0 0 24 24"
+         fill="${pinColor}"
+         stroke="${pinColor}"
+         stroke-width="1"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         style="filter:drop-shadow(0 1px 3px rgba(0,0,0,0.9));flex-shrink:0;margin-top:1px;">
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+      <circle cx="12" cy="10" r="3" fill="white" stroke="none"/>
+    </svg>
+  `
+
+  // Plain text — NO wrapping div with background/border
   const html = `
-    <div class="relative flex items-center justify-center cursor-pointer group">
-      ${
-        isSelected
-          ? `<div class="absolute -inset-3 rounded-full ${pulseClass} opacity-60"></div>`
-          : ''
-      }
-      <div class="relative z-10 flex items-center space-x-1.5 px-3 py-1.5 rounded-full border-2 ${colorClass} shadow-lg font-mono text-xs font-bold transition-all duration-300 transform ${
-    isSelected ? 'scale-110 ring-4 ring-white/30' : 'hover:scale-105'
-  }">
-        <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-        <span class="truncate max-w-[110px]">${zone.name.split(' ')[0]}</span>
-      </div>
+    <div style="
+      display:inline-flex;
+      align-items:center;
+      gap:3px;
+      cursor:pointer;
+      transition:filter 0.15s ease, transform 0.15s ease;
+    "
+    onmouseover="this.style.filter='brightness(1.35)';this.style.transform='scale(1.08)'"
+    onmouseout="this.style.filter='';this.style.transform=''">
+      ${pinSvg}
+      <span style="
+        font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+        font-size:11px;
+        font-weight:${isSelected ? '800' : '700'};
+        color:${pinColor};
+        white-space:nowrap;
+        text-shadow:0 1px 4px rgba(0,0,0,0.95),0 0 8px rgba(0,0,0,0.85);
+        letter-spacing:0.02em;
+      ">${displayName}</span>
     </div>
   `
 
   return L.divIcon({
     html,
-    className: 'custom-hazard-marker',
-    iconSize: [120, 36],
-    iconAnchor: [60, 18],
+    className: 'gis-pin-marker',
+    iconSize: [100, 18],
+    iconAnchor: [7, 14],   // tip of the pin sits at the coordinate
   })
 }
 
-// Create custom L.divIcon for Relocation / Shelter Sites
+// Creates a plain GIS location pin for Relocation / Shelter Sites (green, no card/background)
 const createShelterIcon = (site, isHovered) => {
+  const pinColor = isHovered ? '#6ee7b7' : '#34d399'  // emerald-300 on hover, emerald-400 default
+  const displayName = site.name.split(' ')[0]
+
+  const pinSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg"
+         width="12" height="12"
+         viewBox="0 0 24 24"
+         fill="${pinColor}"
+         stroke="${pinColor}"
+         stroke-width="1"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         style="filter:drop-shadow(0 1px 3px rgba(0,0,0,0.9));flex-shrink:0;margin-top:1px;">
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+      <circle cx="12" cy="10" r="3" fill="white" stroke="none"/>
+    </svg>
+  `
+
   const html = `
-    <div class="relative flex items-center justify-center cursor-pointer group">
-      <div class="relative z-10 flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-slate-900/90 text-emerald-400 border border-emerald-500/50 shadow-md font-mono text-[11px] font-semibold hover:bg-slate-800 transition">
-        <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span class="truncate max-w-[100px]">${site.name.split(' ')[0]}</span>
-      </div>
+    <div style="
+      display:inline-flex;
+      align-items:center;
+      gap:3px;
+      cursor:pointer;
+      transition:filter 0.15s ease, transform 0.15s ease;
+    "
+    onmouseover="this.style.filter='brightness(1.35)';this.style.transform='scale(1.08)'"
+    onmouseout="this.style.filter='';this.style.transform=''">
+      ${pinSvg}
+      <span style="
+        font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+        font-size:10px;
+        font-weight:600;
+        color:${pinColor};
+        white-space:nowrap;
+        text-shadow:0 1px 4px rgba(0,0,0,0.95),0 0 8px rgba(0,0,0,0.85);
+        letter-spacing:0.02em;
+      ">${displayName}</span>
     </div>
   `
 
   return L.divIcon({
     html,
-    className: 'custom-shelter-marker',
-    iconSize: [110, 30],
-    iconAnchor: [55, 15],
+    className: 'gis-pin-marker',
+    iconSize: [90, 16],
+    iconAnchor: [6, 12],
   })
 }
 
 const HazardMapMarkers = ({ hazardZones, selectedZone, onSelectZone, activeHoveredSite }) => {
   if (!hazardZones || hazardZones.length === 0) return null
+
+  // Filter out duplicate shelter sites that overlap with existing hazard sector names (Mayong, Laharighat)
+  const filteredNearbySites = selectedZone?.nearbySites
+    ? selectedZone.nearbySites.filter((site) => {
+        const siteLower = site.name.toLowerCase()
+        // Ignore duplicate shelter cards for Mayong and Laharighat
+        return !siteLower.includes('mayong') && !siteLower.includes('laharighat')
+      })
+    : []
 
   return (
     <>
@@ -99,9 +156,9 @@ const HazardMapMarkers = ({ hazardZones, selectedZone, onSelectZone, activeHover
         </>
       )}
 
-      {/* 2. Evacuation Polylines between active hazard zone and nearby relocation sites */}
+      {/* 2. Evacuation Polylines between active hazard zone and distinct relocation sites */}
       {selectedZone &&
-        selectedZone.nearbySites.map((site, index) => {
+        filteredNearbySites.map((site, index) => {
           const isHighlighted = activeHoveredSite && activeHoveredSite.name === site.name
           return (
             <Polyline
@@ -126,9 +183,9 @@ const HazardMapMarkers = ({ hazardZones, selectedZone, onSelectZone, activeHover
           )
         })}
 
-      {/* 3. Nearby Shelter / Relocation Markers for Active Zone */}
+      {/* 3. Distinct Relief Camps / Shelters (no duplicate cards for Mayong/Laharighat) */}
       {selectedZone &&
-        selectedZone.nearbySites.map((site, index) => (
+        filteredNearbySites.map((site, index) => (
           <Marker
             key={`shelter-${site.name}-${index}`}
             position={[site.lat, site.lon]}
@@ -161,7 +218,7 @@ const HazardMapMarkers = ({ hazardZones, selectedZone, onSelectZone, activeHover
           </Marker>
         ))}
 
-      {/* 4. Hazard Zone Markers for Morigaon District */}
+      {/* 4. Hazard / Settlement Zone Markers — no popup card, click triggers zone selection */}
       {hazardZones.map((zone) => {
         const isSelected = selectedZone?.id === zone.id
         return (
@@ -172,55 +229,7 @@ const HazardMapMarkers = ({ hazardZones, selectedZone, onSelectZone, activeHover
             eventHandlers={{
               click: () => onSelectZone(zone),
             }}
-          >
-            <Popup>
-              <div className="p-1 min-w-[220px] text-slate-900">
-                <div className="flex items-center justify-between border-b pb-1.5 mb-2">
-                  <div>
-                    <h3 className="font-bold text-sm text-slate-900 leading-tight">{zone.name}</h3>
-                    <p className="text-[11px] text-slate-500 font-mono">{zone.district} District</p>
-                  </div>
-                  <span
-                    className={`text-[10px] px-2 py-0.5 rounded uppercase font-bold font-mono ${
-                      zone.priorityLevel === 'critical'
-                        ? 'bg-red-100 text-red-700'
-                        : zone.priorityLevel === 'high'
-                        ? 'bg-amber-100 text-amber-800'
-                        : 'bg-emerald-100 text-emerald-800'
-                    }`}
-                  >
-                    {zone.hazardSeverity}
-                  </span>
-                </div>
-
-                <div className="space-y-1.5 text-xs font-mono text-slate-700">
-                  <div className="flex justify-between">
-                    <span>Population:</span>
-                    <strong>{zone.population.toLocaleString()}</strong>
-                  </div>
-                  <div className="flex justify-between text-red-600 font-bold">
-                    <span>Vulnerable:</span>
-                    <span>{zone.vulnerablePopulation.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>Children / Elderly:</span>
-                    <span>{zone.children} / {zone.elderly}</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>Composite Risk:</span>
-                    <strong className="text-amber-600">{zone.compositeRiskScore} / 1.0</strong>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => onSelectZone(zone)}
-                  className="mt-3 w-full bg-slate-900 hover:bg-slate-800 text-white font-mono text-xs font-bold py-1.5 px-3 rounded transition"
-                >
-                  Zoom & Inspect Sector →
-                </button>
-              </div>
-            </Popup>
-          </Marker>
+          />
         )
       })}
     </>

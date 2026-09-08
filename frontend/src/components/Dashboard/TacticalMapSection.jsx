@@ -1,5 +1,6 @@
 import React from 'react'
 import Map from '../Map'
+import DisasterAreaStatusLegend from './DisasterAreaStatusLegend'
 
 const TacticalMapSection = ({ hazardZones, selectedZone, onSelectZone, activeHoveredSite }) => {
   return (
@@ -7,16 +8,19 @@ const TacticalMapSection = ({ hazardZones, selectedZone, onSelectZone, activeHov
       className="flex-1 flex flex-col rounded-2xl bg-tactical-surface border border-tactical-border shadow-2xl overflow-hidden relative"
       data-purpose="hero-tactical-map"
     >
-      {/* Floating Tactical Disaster HUD Bar */}
-      <div className="absolute top-4 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
-        {/* Left: Revenue Circle Quick Selector Pills */}
-        <div className="pointer-events-auto flex items-center space-x-1.5 bg-tactical-card/90 backdrop-blur-md p-1.5 rounded-xl border border-tactical-border shadow-lg">
-          <div className="flex items-center space-x-2 px-2.5 py-1 text-xs font-mono font-bold text-slate-300 border-r border-tactical-border">
-            <span className="w-2 h-2 rounded-full bg-red-400 animate-ping" />
-            <span>Morigaon Pilot:</span>
+      {/* Floating Tactical HUD — Tab Switcher Card Only */}
+      <div className="absolute top-4 left-4 z-20 pointer-events-none">
+        <div
+          className="pointer-events-auto flex items-center gap-1.5 bg-tactical-card/90 backdrop-blur-md px-2 py-1.5 rounded-xl border border-tactical-border shadow-xl"
+        >
+          {/* Label */}
+          <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-mono font-bold text-slate-400 border-r border-tactical-border mr-0.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping flex-shrink-0" />
+            <span className="uppercase tracking-wide whitespace-nowrap">Morigaon Pilot</span>
           </div>
 
-          <div className="flex items-center space-x-1">
+          {/* Zone Tabs */}
+          <div className="flex items-center gap-1">
             {hazardZones.map((zone) => {
               const isSelected = selectedZone?.id === zone.id
               const isCritical = zone.priorityLevel === 'critical'
@@ -26,20 +30,20 @@ const TacticalMapSection = ({ hazardZones, selectedZone, onSelectZone, activeHov
                 <button
                   key={zone.id}
                   onClick={() => onSelectZone(zone)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all flex items-center space-x-1.5 ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono font-bold transition-all duration-200 ${
                     isSelected
                       ? isCritical
-                        ? 'bg-red-500 text-white shadow-md glow-crimson'
+                        ? 'bg-red-500/90 text-white shadow-md shadow-red-500/30 ring-1 ring-red-400/50'
                         : isHigh
-                        ? 'bg-amber-500 text-slate-950 shadow-md glow-amber'
-                        : 'bg-emerald-500 text-slate-950 shadow-md glow-emerald'
-                      : 'bg-slate-900/70 text-slate-300 hover:bg-slate-800 border border-slate-700/50'
+                        ? 'bg-amber-500/90 text-slate-950 shadow-md shadow-amber-500/30 ring-1 ring-amber-400/50'
+                        : 'bg-emerald-500/90 text-slate-950 shadow-md shadow-emerald-500/30 ring-1 ring-emerald-400/50'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/70'
                   }`}
                 >
-                  <span>{zone.name.split(' ')[0]}</span>
+                  <span className="whitespace-nowrap">{zone.name.split(' ')[0]}</span>
                   <span
-                    className={`text-[9px] px-1 py-0.2 rounded font-mono ${
-                      isSelected ? 'bg-black/30 text-white' : 'text-slate-400'
+                    className={`text-[9px] font-mono tabular-nums ${
+                      isSelected ? 'opacity-80' : 'text-slate-500'
                     }`}
                   >
                     {zone.compositeRiskScore}
@@ -49,21 +53,8 @@ const TacticalMapSection = ({ hazardZones, selectedZone, onSelectZone, activeHov
             })}
           </div>
         </div>
-
-        {/* Right: Live Surge & Hazard Status Warning Pill */}
-        <div className="pointer-events-auto flex items-center space-x-3 bg-red-950/85 backdrop-blur-md border border-red-500/50 px-3.5 py-2 rounded-xl text-red-200 text-xs font-mono glow-crimson shadow-xl">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
-          </span>
-          <div className="flex items-center space-x-1.5">
-            <span className="font-bold tracking-wider uppercase text-[11px]">ACTIVE SECTOR:</span>
-            <span className="font-extrabold text-white text-xs tracking-wider uppercase">
-              {selectedZone ? selectedZone.name : 'Morigaon District'}
-            </span>
-          </div>
-        </div>
       </div>
+
 
       {/* Leaflet Tactical Map */}
       <div className="relative w-full h-full" id="tactical-map-container">
@@ -73,6 +64,7 @@ const TacticalMapSection = ({ hazardZones, selectedZone, onSelectZone, activeHov
           onSelectZone={onSelectZone}
           activeHoveredSite={activeHoveredSite}
         />
+        <DisasterAreaStatusLegend />
       </div>
     </section>
   )
