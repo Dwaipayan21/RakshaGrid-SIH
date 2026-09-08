@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css'
 import Recenter from './Recenter'
 import HazardMapMarkers from './Dashboard/HazardMapMarkers'
 import VillageLayer from './VillageLayer'
+import AssamDistrictLayer from "./AssamDistrictLayer";
 
 const Map = ({ hazardZones, selectedZone, onSelectZone, activeHoveredSite }) => {
   const centerLoc = selectedZone
@@ -25,15 +26,21 @@ const Map = ({ hazardZones, selectedZone, onSelectZone, activeHoveredSite }) => 
         url={`https://api.maptiler.com/maps/hybrid-v4/{z}/{x}/{y}.jpg?key=${import.meta.env.VITE_MAPTILER_API_KEY}`}
         tileSize={512}
         zoomOffset={-1}
-        attribution='&copy; <a href="https://www.maptiler.com/copyright/" target="_blank">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap contributors</a>'
+        attribution='&copy; MapTiler &copy; OpenStreetMap contributors'
       />
-      <VillageLayer />
+      <AssamDistrictLayer
+        onDistrictClick={(district) => {
+          console.log("Selected district:", district);
+        }}
+      />
+      {/* <VillageLayer /> */}
       <HazardMapMarkers
         hazardZones={hazardZones}
         selectedZone={selectedZone}
         onSelectZone={onSelectZone}
         activeHoveredSite={activeHoveredSite}
       />
+      
       <Recenter loc={centerLoc} zoom={12} />
     </MapContainer>
   )
