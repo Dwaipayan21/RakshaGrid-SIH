@@ -325,12 +325,31 @@ html.light .plain-district-name-text {
   color: #451a03 !important; /* text-amber-950 */
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
   box-shadow: 0 4px 18px rgba(120, 53, 15, 0.25), 0 0 12px rgba(251, 191, 36, 0.25) !important;
-  pointer-events: none !important;
+  pointer-events: auto !important;
   user-select: none !important;
   white-space: nowrap !important;
   min-width: 130px !important;
+  position: relative !important;
 }
 
+.district-details-close {
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  color: #64748b;
+  padding: 2px 5px;
+  z-index: 10;
+  pointer-events: auto !important;
+}
+
+.district-details-close:hover {
+  color: #111827;
+}
 .district-details-card-amber .district-details-title {
   font-weight: 800 !important;
   font-size: 11px !important;
