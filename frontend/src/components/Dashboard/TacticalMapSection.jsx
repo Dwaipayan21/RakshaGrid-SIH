@@ -1,6 +1,6 @@
 import React from 'react'
-import Map from '../Map'
 import DisasterAreaStatusLegend from './DisasterAreaStatusLegend'
+import Map from '../Map/Map'
 
 const TacticalMapSection = ({ hazardZones, selectedZone, onSelectZone, activeHoveredSite }) => {
   return (
