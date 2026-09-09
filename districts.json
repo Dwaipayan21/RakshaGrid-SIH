@@ -1,0 +1,44 @@
+{
+  "districts": [
+    {
+      "state": "Assam",
+      "stateCode": "AS",
+      "districtCode": "MA",
+      "district": "Morigaon",
+      "headquarters": "Marigaon",
+      "population": 957853,
+      "area": 1704,
+      "density": 562
+    },
+    {
+      "state": "Assam",
+      "stateCode": "AS",
+      "districtCode": "NN",
+      "district": "Nagaon",
+      "headquarters": "Nagaon",
+      "population": 2826006,
+      "area": 3831,
+      "density": 738
+    },
+    {
+      "state": "Assam",
+      "stateCode": "AS",
+      "districtCode": "ST",
+      "district": "Sivasagar",
+      "headquarters": "Sibsagar",
+      "population": 1150253,
+      "area": 2668,
+      "density": 431
+    },
+    {
+      "state": "Assam",
+      "stateCode": "AS",
+      "districtCode": "BP",
+      "district": "Barpeta",
+      "headquarters": "Barpeta",
+      "population": 1693622,
+      "area": 3245,
+      "density": 520
+    }
+  ]
+}
