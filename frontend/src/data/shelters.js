@@ -1,0 +1,81 @@
+const shelters = [
+  {
+    id: "shelter-001",
+    name: "Morigaon Relief Camp",
+    latitude: 26.2508,
+    longitude: 92.3402,
+    capacity: 1200,
+    availableCapacity: 850,
+    type: "Relief Camp",
+    status: "SAFE",
+    district: "Morigaon",
+    circle: "Bhuragaon",
+  },
+
+  {
+    id: "shelter-002",
+    name: "Jagiroad Emergency Shelter",
+    latitude: 26.1465,
+    longitude: 92.1984,
+    capacity: 1500,
+    availableCapacity: 1100,
+    type: "Emergency Shelter",
+    status: "SAFE",
+    district: "Morigaon",
+    circle: "Mayong",
+  },
+
+  {
+    id: "shelter-003",
+    name: "Lahorighat Relief Center",
+    latitude: 26.3074,
+    longitude: 92.3006,
+    capacity: 1000,
+    availableCapacity: 620,
+    type: "Relief Center",
+    status: "SAFE",
+    district: "Morigaon",
+    circle: "Lahorighat",
+  },
+
+  {
+    id: "shelter-004",
+    name: "Mayong Community Shelter",
+    latitude: 26.2447,
+    longitude: 92.3528,
+    capacity: 800,
+    availableCapacity: 540,
+    type: "Community Shelter",
+    status: "SAFE",
+    district: "Morigaon",
+    circle: "Mayong",
+  },
+
+  {
+    id: "shelter-005",
+    name: "Dhing Evacuation Center",
+    latitude: 26.4662,
+    longitude: 92.4738,
+    capacity: 1800,
+    availableCapacity: 1350,
+    type: "Evacuation Center",
+    status: "SAFE",
+    district: "Nagaon",
+    circle: "Dhing",
+  },
+
+  {
+    id: "shelter-006",
+    name: "Bhuragaon High School Shelter",
+    latitude: 26.3652,
+    longitude: 92.2765,
+    capacity: 700,
+    availableCapacity: 410,
+    type: "School Shelter",
+    status: "AT_RISK",
+    district: "Morigaon",
+    circle: "Bhuragaon",
+  },
+];
+
+export default shelters;

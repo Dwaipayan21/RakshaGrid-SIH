@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { GeoJSON, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
-import districtPopulationData from "../data/districtPopulation.json";
+import districtPopulationData from "../../data/districtPopulation.json";
 
 // Fallback logic to extract district name from GeoJSON feature properties
 const getDistrictName = (properties) => {
@@ -121,26 +121,26 @@ const AssamDistrictLayer = ({ onDistrictClick }) => {
 
   // Default neutral style for district administrative boundaries
   const defaultStyle = {
-    color: "#38bdf8",
+    color: "#94a3b8",
     weight: 1.5,
-    fillColor: "#38bdf8",
+    fillColor: "#ffffff",
     fillOpacity: 0.03,
   };
 
   const getFeatureStyle = (featureName) => {
     if (featureName === selectedDistrict) {
       return {
-        color: "#22d3ee",
+        color: "#f59e0b",
         weight: 2.5,
-        fillColor: "#0284c7",
+        fillColor: "#f59e0b",
         fillOpacity: 0.18,
       };
     }
     if (featureName === hoveredDistrict) {
       return {
-        color: "#7dd3fc",
+        color: "#cdb5e1",
         weight: 2.5,
-        fillColor: "#38bdf8",
+        fillColor: "#ffffff",
         fillOpacity: 0.12,
       };
     }
@@ -216,9 +216,9 @@ const AssamDistrictLayer = ({ onDistrictClick }) => {
             mouseover: (e) => {
               setHoveredDistrict(districtName);
               e.target.setStyle({
-                weight: 2.5,
-                color: "#7dd3fc",
-                fillOpacity: 0.12,
+                weight: 1.5,
+                color: "#cbd5e1",
+                fillOpacity: 0.04,
               });
             },
             mouseout: (e) => {
