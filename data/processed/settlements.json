@@ -1,0 +1,126 @@
+[
+  {
+    "settlement_id": "ASSAM-MORIGAON-001",
+    "settlement_name": "Sample Settlement A",
+    "state": "Assam",
+    "district": "Morigaon",
+    "hazard_type": "flood",
+    "latitude": 26.25,
+    "longitude": 92.34,
+    "population": 4200,
+    "households": 850,
+    "population_density": 1450,
+    "vulnerability_score": 78,
+    "housing_structure": "mixed",
+
+    "rainfall_mm": 110,
+    "river_level_m": 8.2,
+    "danger_level_m": 9.0,
+    "inundation_depth_m": 1.1,
+    "historical_flood_frequency": 70,
+
+    "travel_time_minutes": 75,
+    "road_accessibility": 40,
+    "shelter_capacity": 1800
+  },
+
+  {
+    "settlement_id": "ASSAM-MORIGAON-002",
+    "settlement_name": "Sample Settlement B",
+    "state": "Assam",
+    "district": "Morigaon",
+    "hazard_type": "flood",
+    "latitude": 26.29,
+    "longitude": 92.31,
+    "population": 2800,
+    "households": 570,
+    "population_density": 900,
+    "vulnerability_score": 62,
+    "housing_structure": "mixed",
+
+    "rainfall_mm": 85,
+    "river_level_m": 7.1,
+    "danger_level_m": 9.0,
+    "inundation_depth_m": 0.6,
+    "historical_flood_frequency": 55,
+
+    "travel_time_minutes": 45,
+    "road_accessibility": 65,
+    "shelter_capacity": 2200
+  },
+
+  {
+    "settlement_id": "ASSAM-MORIGAON-003",
+    "settlement_name": "Sample Settlement C",
+    "state": "Assam",
+    "district": "Morigaon",
+    "hazard_type": "flood",
+    "latitude": 26.22,
+    "longitude": 92.28,
+    "population": 6500,
+    "households": 1300,
+    "population_density": 1750,
+    "vulnerability_score": 88,
+    "housing_structure": "mixed",
+
+    "rainfall_mm": 135,
+    "river_level_m": 8.7,
+    "danger_level_m": 9.0,
+    "inundation_depth_m": 1.5,
+    "historical_flood_frequency": 82,
+
+    "travel_time_minutes": 95,
+    "road_accessibility": 25,
+    "shelter_capacity": 1200
+  },
+
+  {
+    "settlement_id": "ASSAM-MORIGAON-004",
+    "settlement_name": "Sample Settlement D",
+    "state": "Assam",
+    "district": "Morigaon",
+    "hazard_type": "flood",
+    "latitude": 26.31,
+    "longitude": 92.38,
+    "population": 1600,
+    "households": 330,
+    "population_density": 500,
+    "vulnerability_score": 35,
+    "housing_structure": "mixed",
+
+    "rainfall_mm": 55,
+    "river_level_m": 5.8,
+    "danger_level_m": 9.0,
+    "inundation_depth_m": 0.2,
+    "historical_flood_frequency": 30,
+
+    "travel_time_minutes": 25,
+    "road_accessibility": 85,
+    "shelter_capacity": 2000
+  },
+
+  {
+    "settlement_id": "ASSAM-MORIGAON-005",
+    "settlement_name": "Sample Settlement E",
+    "state": "Assam",
+    "district": "Morigaon",
+    "hazard_type": "flood",
+    "latitude": 26.27,
+    "longitude": 92.36,
+    "population": 3700,
+    "households": 750,
+    "population_density": 1200,
+    "vulnerability_score": 70,
+    "housing_structure": "mixed",
+
+    "rainfall_mm": 100,
+    "river_level_m": 7.8,
+    "danger_level_m": 9.0,
+    "inundation_depth_m": 0.9,
+    "historical_flood_frequency": 65,
+
+    "travel_time_minutes": 60,
+    "road_accessibility": 50,
+    "shelter_capacity": 1500
+  }
+]

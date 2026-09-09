@@ -6,6 +6,7 @@ const districtRoutes = require('./district.routes');
 const zoneRoutes = require('./zone.routes');
 const settlementRoutes = require('./settlement.routes');
 const authRoutes = require('./auth.routes');
+const riskEngineRoutes = require('./riskEngine.routes');
 const ApiResponse = require('../utils/apiResponse');
 
 // Health Check
@@ -25,5 +26,6 @@ router.use('/districts', districtRoutes);
 router.use('/zones', zoneRoutes);
 router.use('/settlements', settlementRoutes);
 router.use('/auth', authRoutes);
+router.use('/risk', riskEngineRoutes);
 
 module.exports = router;

@@ -1,0 +1,126 @@
+[
+  {
+    "settlement_id": "ASSAM-MORIGAON-003",
+    "settlement_name": "Sample Settlement C",
+    "state": "Assam",
+    "district": "Morigaon",
+    "latitude": 26.22,
+    "longitude": 92.28,
+    "hazard_type": "flood",
+    "risk_score": 86.94,
+    "priority": "P1",
+    "factors": {
+      "hazard": 87.03,
+      "exposure": 94.74,
+      "vulnerability": 88,
+      "accessibility": 77.5,
+      "capacity": 81.54
+    },
+    "explanations": [
+      "Very high hazard intensity.",
+      "Very high population or asset exposure.",
+      "Very high settlement vulnerability.",
+      "Poor accessibility or evacuation connectivity.",
+      "Very limited response or shelter capacity."
+    ],
+    "rank": 1
+  },
+  {
+    "settlement_id": "ASSAM-MORIGAON-001",
+    "settlement_name": "Sample Settlement A",
+    "state": "Assam",
+    "district": "Morigaon",
+    "latitude": 26.25,
+    "longitude": 92.34,
+    "hazard_type": "flood",
+    "risk_score": 71.67,
+    "priority": "P2",
+    "factors": {
+      "hazard": 73.72,
+      "exposure": 78.82,
+      "vulnerability": 78,
+      "accessibility": 61.5,
+      "capacity": 57.14
+    },
+    "explanations": [
+      "High hazard intensity.",
+      "Very high population or asset exposure.",
+      "Very high settlement vulnerability.",
+      "Limited accessibility or evacuation connectivity.",
+      "Limited response or shelter capacity."
+    ],
+    "rank": 2
+  },
+  {
+    "settlement_id": "ASSAM-MORIGAON-005",
+    "settlement_name": "Sample Settlement E",
+    "state": "Assam",
+    "district": "Morigaon",
+    "latitude": 26.27,
+    "longitude": 92.36,
+    "hazard_type": "flood",
+    "risk_score": 64.73,
+    "priority": "P2",
+    "factors": {
+      "hazard": 67.0,
+      "exposure": 67.56,
+      "vulnerability": 70,
+      "accessibility": 50.0,
+      "capacity": 59.46
+    },
+    "explanations": [
+      "High hazard intensity.",
+      "High population or asset exposure.",
+      "High settlement vulnerability.",
+      "Limited accessibility or evacuation connectivity.",
+      "Limited response or shelter capacity."
+    ],
+    "rank": 3
+  },
+  {
+    "settlement_id": "ASSAM-MORIGAON-002",
+    "settlement_name": "Sample Settlement B",
+    "state": "Assam",
+    "district": "Morigaon",
+    "latitude": 26.29,
+    "longitude": 92.31,
+    "hazard_type": "flood",
+    "risk_score": 48.76,
+    "priority": "P3",
+    "factors": {
+      "hazard": 56.28,
+      "exposure": 50.44,
+      "vulnerability": 62,
+      "accessibility": 36.5,
+      "capacity": 21.43
+    },
+    "explanations": [
+      "High hazard intensity.",
+      "High population or asset exposure.",
+      "High settlement vulnerability."
+    ],
+    "rank": 4
+  },
+  {
+    "settlement_id": "ASSAM-MORIGAON-004",
+    "settlement_name": "Sample Settlement D",
+    "state": "Assam",
+    "district": "Morigaon",
+    "latitude": 26.31,
+    "longitude": 92.38,
+    "hazard_type": "flood",
+    "risk_score": 27.71,
+    "priority": "P3",
+    "factors": {
+      "hazard": 37.72,
+      "exposure": 27.62,
+      "vulnerability": 35,
+      "accessibility": 18.5,
+      "capacity": 0.0
+    },
+    "explanations": [
+      "Moderate hazard intensity."
+    ],
+    "rank": 5
+  }
+]
