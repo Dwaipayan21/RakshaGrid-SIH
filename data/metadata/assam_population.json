@@ -1,0 +1,164 @@
+{
+  "Kokrajhar": {
+    "population": 54941,
+    "male": 28459,
+    "female": 26482,
+    "source": "Census 2011"
+  },
+  "Dhubri": {
+    "population": 203701,
+    "male": 103934,
+    "female": 99767,
+    "source": "Census 2011"
+  },
+  "Goalpara": {
+    "population": 138062,
+    "male": 70048,
+    "female": 68014,
+    "source": "Census 2011"
+  },
+  "Barpeta": {
+    "population": 147353,
+    "male": 75215,
+    "female": 72138,
+    "source": "Census 2011"
+  },
+  "Morigaon": {
+    "population": 73298,
+    "male": 37528,
+    "female": 35770,
+    "source": "Census 2011"
+  },
+  "Nagaon": {
+    "population": 369534,
+    "male": 188127,
+    "female": 181407,
+    "source": "Census 2011"
+  },
+  "Sonitpur": {
+    "population": 173845,
+    "male": 88919,
+    "female": 84926,
+    "source": "Census 2011"
+  },
+  "Lakhimpur": {
+    "population": 91333,
+    "male": 47092,
+    "female": 44241,
+    "source": "Census 2011"
+  },
+  "Dhemaji": {
+    "population": 48285,
+    "male": 24971,
+    "female": 23314,
+    "source": "Census 2011"
+  },
+  "Tinsukia": {
+    "population": 264743,
+    "male": 138836,
+    "female": 125907,
+    "source": "Census 2011"
+  },
+  "Dibrugarh": {
+    "population": 243730,
+    "male": 126135,
+    "female": 117595,
+    "source": "Census 2011"
+  },
+  "Sivasagar": {
+    "population": 110096,
+    "male": 57930,
+    "female": 52166,
+    "source": "Census 2011"
+  },
+  "Jorhat": {
+    "population": 220534,
+    "male": 113837,
+    "female": 106697,
+    "source": "Census 2011"
+  },
+  "Golaghat": {
+    "population": 97736,
+    "male": 50036,
+    "female": 47700,
+    "source": "Census 2011"
+  },
+  "Karbi Anglong": {
+    "population": 112966,
+    "male": 58243,
+    "female": 54723,
+    "source": "Census 2011"
+  },
+  "Dima Hasao": {
+    "population": 62489,
+    "male": 32985,
+    "female": 29504,
+    "source": "Census 2011"
+  },
+  "Cachar": {
+    "population": 315464,
+    "male": 159201,
+    "female": 156263,
+    "source": "Census 2011"
+  },
+  "Karimganj": {
+    "population": 109700,
+    "male": 55354,
+    "female": 54346,
+    "source": "Census 2011"
+  },
+  "Hailakandi": {
+    "population": 48140,
+    "male": 24143,
+    "female": 23997,
+    "source": "Census 2011"
+  },
+  "Bongaigaon": {
+    "population": 109810,
+    "male": 56032,
+    "female": 53778,
+    "source": "Census 2011"
+  },
+  "Chirang": {
+    "population": 35337,
+    "male": 17965,
+    "female": 17372,
+    "source": "Census 2011"
+  },
+  "Kamrup": {
+    "population": 142394,
+    "male": 72321,
+    "female": 70073,
+    "source": "Census 2011"
+  },
+  "Kamrup Metropolitan": {
+    "population": 1037011,
+    "male": 536523,
+    "female": 500488,
+    "source": "Census 2011"
+  },
+  "Nalbari": {
+    "population": 82730,
+    "male": 42329,
+    "female": 40401,
+    "source": "Census 2011"
+  },
+  "Baksa": {
+    "population": 12242,
+    "male": 6303,
+    "female": 5939,
+    "source": "Census 2011"
+  },
+  "Darrang": {
+    "population": 55494,
+    "male": 28813,
+    "female": 26681,
+    "source": "Census 2011"
+  },
+  "Udalguri": {
+    "population": 37574,
+    "male": 19175,
+    "female": 18399,
+    "source": "Census 2011"
+  }
+}
