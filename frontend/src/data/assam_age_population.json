@@ -4,13 +4,17 @@
     "children": 10248899,
     "workingAge": 18859309,
     "elderly": 2078544,
+    "area": 78438,
+
     "source": "Census 2011 C-14"
+    
   },
   "District - Kokrajhar (01)": {
     "population": 887142,
     "children": 300837,
     "workingAge": 531219,
     "elderly": 54286,
+    "area": 3296,
     "source": "Census 2011 C-14"
   },
   "District - Dhubri (02)": {
@@ -18,6 +22,7 @@
     "children": 756856,
     "workingAge": 1078158,
     "elderly": 112698,
+    "area": 1511,
     "source": "Census 2011 C-14"
   },
   "District - Goalpara (03)": {
@@ -25,6 +30,7 @@
     "children": 364072,
     "workingAge": 585762,
     "elderly": 57933,
+    "area": 1824,
     "source": "Census 2011 C-14"
   },
   "District - Barpeta (04)": {
@@ -32,6 +38,7 @@
     "children": 616865,
     "workingAge": 965958,
     "elderly": 109890,
+    "area": 2282,
     "source": "Census 2011 C-14"
   },
   "District - Marigaon (05)": {
@@ -39,6 +46,7 @@
     "children": 352359,
     "workingAge": 541891,
     "elderly": 61982,
+    "area": 1551,
     "source": "Census 2011 C-14"
   },
   "District - Nagaon (06)": {
@@ -46,6 +54,7 @@
     "children": 1005396,
     "workingAge": 1625843,
     "elderly": 191184,
+    "area": 2550,
     "source": "Census 2011 C-14"
   },
   "District - Sonitpur (07)": {
@@ -53,6 +62,7 @@
     "children": 619731,
     "workingAge": 1172320,
     "elderly": 130827,
+    "area": 3409,
     "source": "Census 2011 C-14"
   },
   "District - Lakhimpur (08)": {
@@ -60,6 +70,7 @@
     "children": 347073,
     "workingAge": 625716,
     "elderly": 69083,
+    "area": 2277,
     "source": "Census 2011 C-14"
   },
   "District - Dhemaji (09)": {
@@ -67,6 +78,7 @@
     "children": 234979,
     "workingAge": 408743,
     "elderly": 42180,
+    "area": 3237,
     "source": "Census 2011 C-14"
   },
   "District - Tinsukia (10)": {
@@ -74,6 +86,7 @@
     "children": 412121,
     "workingAge": 830623,
     "elderly": 84665,
+    "area": 3790,
     "source": "Census 2011 C-14"
   },
   "District - Dibrugarh (11)": {
@@ -81,6 +94,7 @@
     "children": 377478,
     "workingAge": 858839,
     "elderly": 89468,
+    "area": 3381,
     "source": "Census 2011 C-14"
   },
   "District - Sivasagar (12)": {
@@ -88,6 +102,7 @@
     "children": 322790,
     "workingAge": 742677,
     "elderly": 85246,
+    "area": 1581,
     "source": "Census 2011 C-14"
   },
   "District - Jorhat (13)": {
@@ -95,6 +110,7 @@
     "children": 292950,
     "workingAge": 710662,
     "elderly": 87908,
+    "area": 1758,
     "source": "Census 2011 C-14"
   },
   "District - Golaghat (14)": {
@@ -102,6 +118,7 @@
     "children": 316314,
     "workingAge": 676325,
     "elderly": 73843,
+    "area": 3502,
     "source": "Census 2011 C-14"
   },
   "District - Karbi Anglong (15)": {
@@ -109,6 +126,7 @@
     "children": 335890,
     "workingAge": 569652,
     "elderly": 49953,
+    "area": 7366,
     "source": "Census 2011 C-14"
   },
   "District - Dima Hasao (16)": {
@@ -116,6 +134,7 @@
     "children": 71717,
     "workingAge": 130983,
     "elderly": 11292,
+    "area": 4888,
     "source": "Census 2011 C-14"
   },
   "District - Cachar (17)": {
@@ -123,6 +142,7 @@
     "children": 558371,
     "workingAge": 1055589,
     "elderly": 121705,
+    "area": 3786,
     "source": "Census 2011 C-14"
   },
   "District - Karimganj (18)": {
@@ -130,6 +150,7 @@
     "children": 442151,
     "workingAge": 699829,
     "elderly": 86228,
+    "area": 1809,
     "source": "Census 2011 C-14"
   },
   "District - Hailakandi (19)": {
@@ -137,6 +158,7 @@
     "children": 238838,
     "workingAge": 377177,
     "elderly": 42990,
+    "area": 1327,
     "source": "Census 2011 C-14"
   },
   "District - Bongaigaon (20)": {
@@ -144,6 +166,7 @@
     "children": 253247,
     "workingAge": 438751,
     "elderly": 46586,
+    "area": 1093,
     "source": "Census 2011 C-14"
   },
   "District - Chirang (21)": {
@@ -151,6 +174,7 @@
     "children": 165148,
     "workingAge": 287771,
     "elderly": 29125,
+    "area": 1923,
     "source": "Census 2011 C-14"
   },
   "District - Kamrup (22)": {
@@ -158,6 +182,7 @@
     "children": 459410,
     "workingAge": 948200,
     "elderly": 109137,
+    "area": 3105,
     "source": "Census 2011 C-14"
   },
   "District - Kamrup Metropolitan (23)": {
@@ -165,6 +190,7 @@
     "children": 294198,
     "workingAge": 870046,
     "elderly": 87617,
+    "area": 955,
     "source": "Census 2011 C-14"
   },
   "District - Nalbari (24)": {
@@ -172,6 +198,7 @@
     "children": 221795,
     "workingAge": 486410,
     "elderly": 62985,
+    "area": 1052,
     "source": "Census 2011 C-14"
   },
   "District - Baksa (25)": {
@@ -179,6 +206,7 @@
     "children": 288656,
     "workingAge": 594393,
     "elderly": 66405,
+    "area": 2457,
     "source": "Census 2011 C-14"
   },
   "District - Darrang (26)": {
@@ -186,6 +214,7 @@
     "children": 338391,
     "workingAge": 529734,
     "elderly": 59938,
+    "area": 1585,
     "source": "Census 2011 C-14"
   },
   "District - Udalguri (27)": {
@@ -193,6 +222,25 @@
     "children": 261266,
     "workingAge": 516038,
     "elderly": 53390,
+    "area": 2012,
     "source": "Census 2011 C-14"
+  },
+  "District - Biswanath (28)": {
+    "area": 1796
+  },
+  "District - Charaideo (29)": {
+    "area": 1087
+  },
+  "District - Hojai (30)": {
+    "area": 1422
+  },
+  "District - Majuli (31)": {
+    "area": 1093
+  },
+  "District - South Salmara (32)": {
+    "area": 665
+  },
+  "District - West K.Anglong (33)": {
+    "area": 3068
   }
 }
