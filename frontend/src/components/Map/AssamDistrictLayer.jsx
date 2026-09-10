@@ -210,6 +210,7 @@ const AssamDistrictLayer = ({ onDistrictClick }) => {
     const childrenStr = fmt(stats?.children);
     const workingAgeStr = fmt(stats?.workingAge);
     const elderlyStr = fmt(stats?.elderly);
+    const areaStr = fmt(stats?.area);
 
     const html = isSelected
       ? `
@@ -220,7 +221,7 @@ const AssamDistrictLayer = ({ onDistrictClick }) => {
           <div class="district-details-stat"><span>Children:</span> <strong>${childrenStr}</strong></div>
           <div class="district-details-stat"><span>Working Age:</span> <strong>${workingAgeStr}</strong></div>
           <div class="district-details-stat"><span>Elderly:</span> <strong>${elderlyStr}</strong></div>
-          <div class="district-details-stat district-details-stat-pending"><span>Area:</span> <strong>Fetching...</strong></div>
+          <div class="district-details-stat"><span>Area:</span> <strong>${areaStr}</strong></div>
         </div>
       `
       : `
