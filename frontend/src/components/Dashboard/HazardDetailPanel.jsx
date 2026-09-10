@@ -83,6 +83,9 @@ const initialProtocols = [
 
 const HazardDetailPanel = ({
   zone,
+  riskAssessment,
+  riskLoading,
+  riskError,
   onOpenDrawer = () => {},
   activeHoveredSite,
   setActiveHoveredSite = () => {},
@@ -90,9 +93,56 @@ const HazardDetailPanel = ({
   const [protocols, setProtocols] = useState(initialProtocols)
 
   if (!zone) return null
+    // Risk Engine result
+  const riskResult = riskAssessment?.result
 
-  const isCritical = zone.priorityLevel === 'critical'
-  const isHigh = zone.priorityLevel === 'high'
+  const liveRiskScore = riskResult?.risk_score ?? null
+  const livePriority = riskResult?.priority ?? null
+  const liveFactors = riskResult?.factors ?? null
+
+  const displayRiskScore =
+    liveRiskScore !== null
+      ? (liveRiskScore / 100).toFixed(2)
+      : zone.compositeRiskScore
+
+  const displayPriority =
+    livePriority ||
+    (zone.priorityLevel === 'critical'
+      ? 'P1'
+      : zone.priorityLevel === 'high'
+        ? 'P2'
+        : 'P3')
+
+  const enginePriority = riskAssessment?.result?.priority || null
+const isCritical =
+  enginePriority === 'P1' ||
+  (!enginePriority && zone.priorityLevel === 'critical')
+
+const isHigh =
+  enginePriority === 'P2' ||
+  (!enginePriority && zone.priorityLevel === 'high')
+
+const isMedium =
+  enginePriority === 'P3' ||
+  (!enginePriority &&
+    zone.priorityLevel !== 'critical' &&
+    zone.priorityLevel !== 'high')
+
+const priorityLabel = isCritical
+  ? 'VERY HIGH'
+  : isHigh
+    ? 'HIGH'
+    : isMedium
+      ? 'MEDIUM'
+      : 'LOW'
+
+const priorityAction = isCritical
+  ? '{priorityAction}'
+  : isHigh
+    ? '{priorityLabel}'
+    : isMedium
+      ? 'MONITOR & PREPARE'
+      : 'ROUTINE MONITORING'
 
   const totalRelocationCapacity = zone.nearbySites.reduce((acc, site) => acc + site.available, 0)
 
@@ -188,11 +238,31 @@ const HazardDetailPanel = ({
             </div>
 
             <div className="p-2.5 rounded-xl bg-tactical-card border border-tactical-border flex flex-col justify-between">
-              <span className="text-[10px] text-slate-400 uppercase">Composite Risk</span>
-              <div className="flex items-baseline space-x-1">
-                <span className="text-lg font-extrabold text-amber-400">{zone.compositeRiskScore}</span>
-                <span className="text-[10px] text-slate-400">/ 1.0</span>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-slate-400 uppercase">
+                  Composite Risk
+                </span>
+                {riskLoading && (
+                  <span className="text-[9px] text-sky-400 animate-pulse">
+                    ANALYZING
+                  </span>
+                )}
               </div>
+              <div className="flex items-baseline space-x-1">
+                <span className="text-lg font-extrabold text-amber-400">
+                  {riskAssessment?.result?.risk_score != null
+                  ? (riskAssessment.result.risk_score / 100).toFixed(2)
+                  : zone.compositeRiskScore}
+                </span>
+                <span className="text-[10px] text-slate-400">
+                    / 1.0
+                </span>
+              </div>
+              {riskError && (
+                <span className="text-[9px] text-red-400 mt-1">
+                  Risk Engine unavailable
+                </span>
+              )}
             </div>
           </div>
 
