@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { GeoJSON, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
-import districtPopulationData from "../../data/districtPopulation.json";
+import assamAgePopulationData from "../../data/assam_age_population.json";
 
 // Fallback logic to extract district name from GeoJSON feature properties
 const getDistrictName = (properties) => {
@@ -32,23 +32,48 @@ const formatDistrictDisplayName = (name) => {
     .join(" ");
 };
 
-// Safe lookup helper for district statistics
+// assam_age_population.json keys look like "District - Kokrajhar (01)" or
+// "State - ASSAM (18)". This strips the prefix/suffix down to just the
+// district name ("Kokrajhar"), and returns null for the state-level entry
+// so it doesn't get treated as a district.
+const parseAgeDataKey = (rawKey) => {
+  const match = rawKey.match(/^District\s*-\s*(.+?)\s*\(\d+\)\s*$/i);
+  return match ? match[1].trim() : null;
+};
+
+// Build a normalized (lowercased) lookup table once: "kokrajhar" -> stats.
+// Doing this up front means every district-name variant coming off the
+// GeoJSON (mixed case, "Kamrup Metro" vs "Kamrup Metropolitan", etc.) only
+// needs a single case-insensitive comparison instead of hardcoded aliases.
+const buildAgeDataLookup = (rawData) => {
+  const lookup = {};
+  Object.entries(rawData).forEach(([key, value]) => {
+    const districtName = parseAgeDataKey(key);
+    if (districtName) {
+      lookup[districtName.toLowerCase()] = value;
+    }
+  });
+  return lookup;
+};
+
+const AGE_DATA_LOOKUP = buildAgeDataLookup(assamAgePopulationData);
+
+// Safe lookup helper for district age/population statistics.
+// Tries an exact case-insensitive match first, then falls back to a
+// contains-match either direction (handles "Kamrup" vs "Kamrup Metropolitan"
+// style mismatches between the GeoJSON and the census data).
 const getDistrictStats = (districtName) => {
   if (!districtName) return null;
+  const clean = districtName.trim().toLowerCase();
 
-  if (districtPopulationData[districtName]) {
-    return districtPopulationData[districtName];
+  if (AGE_DATA_LOOKUP[clean]) {
+    return AGE_DATA_LOOKUP[clean];
   }
 
-  const cleanName = districtName.trim().toLowerCase();
-  const matchedKey = Object.keys(districtPopulationData).find(
-    (k) => k.trim().toLowerCase() === cleanName
+  const partialKey = Object.keys(AGE_DATA_LOOKUP).find(
+    (k) => k.includes(clean) || clean.includes(k)
   );
-  if (matchedKey) {
-    return districtPopulationData[matchedKey];
-  }
-
-  return null;
+  return partialKey ? AGE_DATA_LOOKUP[partialKey] : null;
 };
 
 // Map Zoom Tracker hook component
@@ -69,9 +94,9 @@ const MapZoomTracker = ({ onZoomChange }) => {
 const AssamDistrictLayer = ({ onDistrictClick }) => {
   const [districtData, setDistrictData] = useState(null);
   const [selectedDistrict, setSelectedDistrict] = useState(null);
+  const [selectedClickPosition, setSelectedClickPosition] = useState(null);
   const [hoveredDistrict, setHoveredDistrict] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(10);
-
   useEffect(() => {
     fetch("/geojson/assam_district_boundaries.geojson")
       .then((response) => {
@@ -87,6 +112,31 @@ const AssamDistrictLayer = ({ onDistrictClick }) => {
       .catch((error) => {
         console.error("Error loading Assam district data:", error);
       });
+  }, []);
+
+  // Event listener to capture close button clicks on district detail cards
+  useEffect(() => {
+    const handleCardClick = (e) => {
+      const closeBtn = e.target.closest(".district-details-close");
+      if (closeBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        setSelectedDistrict(null);
+        setSelectedClickPosition(null);
+        return;
+      }
+
+      const card = e.target.closest(".district-details-card-amber");
+      if (card) {
+        e.stopPropagation();
+      }
+    };
+
+    document.addEventListener("click", handleCardClick, true);
+    return () => {
+      document.removeEventListener("click", handleCardClick, true);
+    };
   }, []);
 
   // Compute centers and label metadata for each district feature
@@ -149,28 +199,28 @@ const AssamDistrictLayer = ({ onDistrictClick }) => {
 
   // Helper to create Leaflet divIcon for district labels
   // Unselected districts: PLAIN TEXT ONLY (No card, no box container)
-  // Selected district: bg-amber-50 details card
+  // Selected district: bg-amber-50 details card showing the age-bracket
+  // breakdown from assam_age_population.json, plus a blank Area row
+  // reserved for a future data source.
   const createLabelIcon = (displayName, stats, isSelected) => {
-    const popStr =
-      stats?.population != null && typeof stats.population === "number"
-        ? stats.population.toLocaleString()
-        : "N/A";
-    const areaStr =
-      stats?.area != null && typeof stats.area === "number"
-        ? `${stats.area.toLocaleString()} km²`
-        : "N/A";
-    const densityStr =
-      stats?.density != null && typeof stats.density === "number"
-        ? `${stats.density.toLocaleString()}/km²`
-        : "N/A";
+    const fmt = (val) =>
+      val != null && typeof val === "number" ? val.toLocaleString() : "N/A";
+
+    const popStr = fmt(stats?.population);
+    const childrenStr = fmt(stats?.children);
+    const workingAgeStr = fmt(stats?.workingAge);
+    const elderlyStr = fmt(stats?.elderly);
 
     const html = isSelected
       ? `
         <div class="district-details-card-amber">
+          <button class="district-details-close" type="button">×</button>
           <div class="district-details-title">${displayName}</div>
           <div class="district-details-stat"><span>Population:</span> <strong>${popStr}</strong></div>
-          <div class="district-details-stat"><span>Area:</span> <strong>${areaStr}</strong></div>
-          <div class="district-details-stat"><span>Density:</span> <strong>${densityStr}</strong></div>
+          <div class="district-details-stat"><span>Children:</span> <strong>${childrenStr}</strong></div>
+          <div class="district-details-stat"><span>Working Age:</span> <strong>${workingAgeStr}</strong></div>
+          <div class="district-details-stat"><span>Elderly:</span> <strong>${elderlyStr}</strong></div>
+          <div class="district-details-stat district-details-stat-pending"><span>Area:</span> <strong>Fetching...</strong></div>
         </div>
       `
       : `
@@ -182,8 +232,9 @@ const AssamDistrictLayer = ({ onDistrictClick }) => {
     return L.divIcon({
       html,
       className: "custom-district-label-container",
-      iconSize: isSelected ? [135, 72] : [90, 20],
-      iconAnchor: isSelected ? [67, 36] : [45, 10],
+      // Taller now that there are 5 stat rows instead of 3
+      iconSize: isSelected ? [150, 108] : [90, 20],
+      iconAnchor: isSelected ? [75, 54] : [45, 10],
     });
   };
 
@@ -206,9 +257,14 @@ const AssamDistrictLayer = ({ onDistrictClick }) => {
           const districtName = getDistrictName(feature.properties);
 
           layer.on({
-            click: () => {
+            click: (e) => {
               console.log("Selected district:", districtName);
+              console.log("Clicked position:", e.latlng);
+
               setSelectedDistrict(districtName);
+
+              setSelectedClickPosition([e.latlng.lat, e.latlng.lng]);
+
               if (onDistrictClick) {
                 onDistrictClick(districtName);
               }
@@ -236,8 +292,22 @@ const AssamDistrictLayer = ({ onDistrictClick }) => {
         return (
           <Marker
             key={lbl.id}
-            position={lbl.center}
-            interactive={false}
+            position={
+              isSelected && selectedClickPosition
+                ? selectedClickPosition
+                : lbl.center
+            }
+            interactive={isSelected}
+            eventHandlers={{
+              click: (e) => {
+                const target = e.originalEvent?.target;
+
+                if (target?.closest?.(".district-details-close")) {
+                  setSelectedDistrict(null);
+                  setSelectedClickPosition(null);
+                }
+              },
+            }}
             icon={createLabelIcon(lbl.displayName, lbl.stats, isSelected)}
           />
         );
