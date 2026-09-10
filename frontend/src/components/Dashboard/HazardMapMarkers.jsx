@@ -1,239 +1,567 @@
 import React from 'react'
-import { Marker, Popup, Circle, Polyline, Tooltip } from 'react-leaflet'
+import {
+  Marker,
+  Popup,
+  Circle,
+  Polyline,
+  Tooltip,
+} from 'react-leaflet'
+
 import L from 'leaflet'
 
-// Creates a GIS-style location pin using Lucide's MapPin SVG path + plain colored text.
-// Absolutely NO card, border, background, or box around the name.
-const createHazardIcon = (zone, isSelected) => {
-  const isCritical = zone.priorityLevel === 'critical'
-  const isHigh = zone.priorityLevel === 'high'
 
-  // Danger-intensity color hex values
-  const pinColor = isCritical ? '#f87171'   // red-400
-    : isHigh                  ? '#fb923c'   // orange-400
-    :                           '#34d399'   // emerald-400
+// =========================================================
+// HAZARD ICON
+// =========================================================
 
-  const displayName = zone.name.split(' ')[0]
+const hazardIcon = L.divIcon({
+  className: 'hazard-marker',
 
-  // Lucide MapPin SVG paths (identical to <MapPin> from lucide-react)
-  const pinSvg = `
-    <svg xmlns="http://www.w3.org/2000/svg"
-         width="14" height="14"
-         viewBox="0 0 24 24"
-         fill="${pinColor}"
-         stroke="${pinColor}"
-         stroke-width="1"
-         stroke-linecap="round"
-         stroke-linejoin="round"
-         style="filter:drop-shadow(0 1px 3px rgba(0,0,0,0.9));flex-shrink:0;margin-top:1px;">
-      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-      <circle cx="12" cy="10" r="3" fill="white" stroke="none"/>
-    </svg>
-  `
-
-  // Plain text — NO wrapping div with background/border
-  const html = `
+  html: `
     <div style="
-      display:inline-flex;
-      align-items:center;
-      gap:3px;
-      cursor:pointer;
-      transition:filter 0.15s ease, transform 0.15s ease;
-    "
-    onmouseover="this.style.filter='brightness(1.35)';this.style.transform='scale(1.08)'"
-    onmouseout="this.style.filter='';this.style.transform=''">
-      ${pinSvg}
-      <span style="
-        font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
-        font-size:11px;
-        font-weight:${isSelected ? '800' : '700'};
-        color:${pinColor};
-        white-space:nowrap;
-        text-shadow:0 1px 4px rgba(0,0,0,0.95),0 0 8px rgba(0,0,0,0.85);
-        letter-spacing:0.02em;
-      ">${displayName}</span>
-    </div>
-  `
+      width:16px;
+      height:16px;
+      border-radius:50%;
+      background:#ef4444;
+      border:3px solid rgba(255,255,255,.9);
+      box-shadow:0 0 18px rgba(239,68,68,.8);
+    "></div>
+  `,
 
-  return L.divIcon({
-    html,
-    className: 'gis-pin-marker',
-    iconSize: [100, 18],
-    iconAnchor: [7, 14],   // tip of the pin sits at the coordinate
-  })
-}
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+})
 
-// Creates a plain GIS location pin for Relocation / Shelter Sites (green, no card/background)
-const createShelterIcon = (site, isHovered) => {
-  const pinColor = isHovered ? '#6ee7b7' : '#34d399'  // emerald-300 on hover, emerald-400 default
-  const displayName = site.name.split(' ')[0]
 
-  const pinSvg = `
-    <svg xmlns="http://www.w3.org/2000/svg"
-         width="12" height="12"
-         viewBox="0 0 24 24"
-         fill="${pinColor}"
-         stroke="${pinColor}"
-         stroke-width="1"
-         stroke-linecap="round"
-         stroke-linejoin="round"
-         style="filter:drop-shadow(0 1px 3px rgba(0,0,0,0.9));flex-shrink:0;margin-top:1px;">
-      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-      <circle cx="12" cy="10" r="3" fill="white" stroke="none"/>
-    </svg>
-  `
+// =========================================================
+// SETTLEMENT ICON
+// =========================================================
 
-  const html = `
+const settlementIcon = L.divIcon({
+  className: 'settlement-marker',
+
+  html: `
     <div style="
-      display:inline-flex;
-      align-items:center;
-      gap:3px;
-      cursor:pointer;
-      transition:filter 0.15s ease, transform 0.15s ease;
-    "
-    onmouseover="this.style.filter='brightness(1.35)';this.style.transform='scale(1.08)'"
-    onmouseout="this.style.filter='';this.style.transform=''">
-      ${pinSvg}
-      <span style="
-        font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
-        font-size:10px;
-        font-weight:600;
-        color:${pinColor};
-        white-space:nowrap;
-        text-shadow:0 1px 4px rgba(0,0,0,0.95),0 0 8px rgba(0,0,0,0.85);
-        letter-spacing:0.02em;
-      ">${displayName}</span>
-    </div>
-  `
+      width:12px;
+      height:12px;
+      border-radius:50%;
+      background:#22d3ee;
+      border:2px solid white;
+      box-shadow:0 0 12px rgba(34,211,238,.8);
+    "></div>
+  `,
 
-  return L.divIcon({
-    html,
-    className: 'gis-pin-marker',
-    iconSize: [90, 16],
-    iconAnchor: [6, 12],
-  })
-}
+  iconSize: [12, 12],
+  iconAnchor: [6, 6],
+})
 
-const HazardMapMarkers = ({ hazardZones, selectedZone, onSelectZone, activeHoveredSite }) => {
-  if (!hazardZones || hazardZones.length === 0) return null
 
-  // Filter out duplicate shelter sites that overlap with existing hazard sector names (Mayong, Laharighat)
-  const filteredNearbySites = selectedZone?.nearbySites
-    ? selectedZone.nearbySites.filter((site) => {
-        const siteLower = site.name.toLowerCase()
-        // Ignore duplicate shelter cards for Mayong and Laharighat
-        return !siteLower.includes('mayong') && !siteLower.includes('laharighat')
-      })
-    : []
+// =========================================================
+// SHELTER ICON
+// =========================================================
+
+const shelterIcon = L.divIcon({
+  className: 'shelter-marker',
+
+  html: `
+    <div style="
+      width:15px;
+      height:15px;
+      border-radius:4px;
+      background:#10b981;
+      border:2px solid white;
+      box-shadow:0 0 12px rgba(16,185,129,.8);
+    "></div>
+  `,
+
+  iconSize: [15, 15],
+  iconAnchor: [7, 7],
+})
+
+
+// =========================================================
+// HAZARD MAP MARKERS
+// =========================================================
+
+export default function HazardMapMarkers({
+  hazardZones = [],
+
+  selectedZone,
+
+  shelters = [],
+
+  activeLayers = {},
+
+  onSelectZone,
+
+  onShelterSelect,
+
+  activeHoveredSite,
+
+  selectedShelter,
+}) {
+
+
+  // =======================================================
+  // LAYER VISIBILITY
+  // =======================================================
+
+  const showRiskZones =
+    activeLayers.riskZones !== false
+
+  const showSettlements =
+    activeLayers.settlements !== false
+
+  const showShelters =
+    activeLayers.shelters !== false
+
+  const showFloodExtent =
+    activeLayers.floodExtent !== false
+
+
+  // =======================================================
+  // SELECTED ZONE COORDINATES
+  //
+  // Supports both:
+  // lat / lon
+  // latitude / longitude
+  // =======================================================
+
+  const selectedLat =
+    selectedZone?.latitude ??
+    selectedZone?.lat
+
+  const selectedLon =
+    selectedZone?.longitude ??
+    selectedZone?.lon
+
 
   return (
     <>
-      {/* 1. Selected Hazard Circle Danger Area Perimeter */}
-      {selectedZone && (
-        <>
-          <Circle
-            center={[selectedZone.lat, selectedZone.lon]}
-            radius={3500}
-            pathOptions={{
-              color: selectedZone.priorityLevel === 'critical' ? '#ef4444' : '#f59e0b',
-              fillColor: selectedZone.priorityLevel === 'critical' ? '#ef4444' : '#f59e0b',
-              fillOpacity: 0.18,
-              weight: 2,
-              dashArray: '6, 8',
-            }}
-          />
-          <Circle
-            center={[selectedZone.lat, selectedZone.lon]}
-            radius={6500}
-            pathOptions={{
-              color: selectedZone.priorityLevel === 'critical' ? '#dc2626' : '#d97706',
-              fillColor: selectedZone.priorityLevel === 'critical' ? '#991b1b' : '#78350f',
-              fillOpacity: 0.08,
-              weight: 1,
-              dashArray: '3, 6',
-            }}
-          />
-        </>
-      )}
 
-      {/* 2. Evacuation Polylines between active hazard zone and distinct relocation sites */}
-      {selectedZone &&
-        filteredNearbySites.map((site, index) => {
-          const isHighlighted = activeHoveredSite && activeHoveredSite.name === site.name
-          return (
-            <Polyline
-              key={`polyline-${selectedZone.id}-${index}`}
-              positions={[
-                [selectedZone.lat, selectedZone.lon],
-                [site.lat, site.lon],
+      {/* =================================================
+          FLOOD EXTENT
+
+          This is the visual flood-risk extent.
+          It is controlled independently by the
+          "Flood Extent" layer switch.
+          ================================================= */}
+
+      {showFloodExtent &&
+        selectedZone &&
+        selectedLat != null &&
+        selectedLon != null && (
+          <>
+
+            {/* Outer flood extent */}
+
+            <Circle
+              center={[
+                selectedLat,
+                selectedLon,
               ]}
+              radius={6500}
               pathOptions={{
-                color: isHighlighted ? '#00f0ff' : '#10b981',
-                weight: isHighlighted ? 4 : 2.5,
-                dashArray: '8, 8',
-                opacity: isHighlighted ? 0.95 : 0.7,
+                color: '#f97316',
+                weight: 1.5,
+                dashArray: '6 8',
+                fillColor: '#f97316',
+                fillOpacity: 0.04,
+              }}
+            />
+
+
+            {/* Inner flood extent */}
+
+            <Circle
+              center={[
+                selectedLat,
+                selectedLon,
+              ]}
+              radius={3500}
+              pathOptions={{
+                color: '#ef4444',
+                weight: 2,
+                dashArray: '8 8',
+                fillColor: '#ef4444',
+                fillOpacity: 0.08,
+              }}
+            />
+
+          </>
+        )}
+
+
+      {/* =================================================
+          RISK ZONE
+
+          Controlled by:
+          Risk Zones
+          ================================================= */}
+
+      {showRiskZones &&
+        selectedZone &&
+        selectedLat != null &&
+        selectedLon != null && (
+
+          <Circle
+            center={[
+              selectedLat,
+              selectedLon,
+            ]}
+            radius={1800}
+            pathOptions={{
+              color: '#ef4444',
+              weight: 2.5,
+              fillColor: '#ef4444',
+              fillOpacity: 0.12,
+            }}
+          />
+
+        )}
+
+
+      {/* =================================================
+          EVACUATION CORRIDORS
+
+          These are ONLY visual guidance lines.
+
+          IMPORTANT:
+          They are NOT the OSRM route.
+
+          The actual shortest road route is produced
+          by useRoute() + RouteLayer in Map.jsx.
+          ================================================= */}
+
+      {showShelters &&
+        selectedZone &&
+        selectedLat != null &&
+        selectedLon != null &&
+        shelters
+          .filter(
+            (shelter) =>
+              shelter.status !== 'AT_RISK'
+          )
+          .map((shelter) => {
+
+            const shelterLat =
+              shelter.latitude ??
+              shelter.lat
+
+            const shelterLon =
+              shelter.longitude ??
+              shelter.lon
+
+
+            if (
+              shelterLat == null ||
+              shelterLon == null
+            ) {
+              return null
+            }
+
+
+            return (
+              <Polyline
+                key={`evacuation-corridor-${shelter.id}`}
+                positions={[
+                  [
+                    selectedLat,
+                    selectedLon,
+                  ],
+                  [
+                    shelterLat,
+                    shelterLon,
+                  ],
+                ]}
+                pathOptions={{
+                  color: '#10b981',
+                  weight: 2,
+                  opacity: 0.35,
+                  dashArray: '6 8',
+                }}
+              />
+            )
+          })}
+
+
+      {/* =================================================
+          SHELTERS
+
+          IMPORTANT:
+          Clicking a shelter calls onShelterSelect().
+
+          This reconnects the shelter to:
+
+          setSelectedShelter()
+                  ↓
+              useRoute()
+                  ↓
+                OSRM
+                  ↓
+              RouteLayer
+          ================================================= */}
+
+      {showShelters &&
+        shelters.map((shelter) => {
+
+          const shelterLat =
+            shelter.latitude ??
+            shelter.lat
+
+          const shelterLon =
+            shelter.longitude ??
+            shelter.lon
+
+
+          if (
+            shelterLat == null ||
+            shelterLon == null
+          ) {
+            return null
+          }
+
+
+          const isSelected =
+            selectedShelter?.id ===
+            shelter.id
+
+
+          return (
+            <Marker
+              key={`shelter-${shelter.id}`}
+              position={[
+                shelterLat,
+                shelterLon,
+              ]}
+              icon={shelterIcon}
+
+              eventHandlers={{
+                click: () => {
+                  onShelterSelect?.(
+                    shelter
+                  )
+                },
               }}
             >
-              <Tooltip sticky permanent={false} className="custom-tooltip">
-                <span className="font-mono text-xs text-slate-200">
-                  {site.name} • {site.distanceKm} km ({site.etaMin} min)
-                </span>
+
+              {/* =================================================
+                  SHELTER NAME
+                  ================================================= */}
+
+              <Tooltip
+                direction="top"
+                offset={[
+                  0,
+                  -8,
+                ]}
+              >
+                {shelter.name}
               </Tooltip>
-            </Polyline>
+
+
+              {/* =================================================
+                  SHELTER POPUP
+                  ================================================= */}
+
+              <Popup>
+
+                <div
+                  className="
+                    text-sm
+                    font-sans
+                    text-slate-900
+                    min-w-[170px]
+                  "
+                >
+
+                  <strong>
+                    {shelter.name}
+                  </strong>
+
+
+                  <div className="mt-2">
+                    Capacity:{' '}
+                    {shelter.capacity ??
+                      '—'}
+                  </div>
+
+
+                  <div>
+                    Available:{' '}
+                    {shelter.available ??
+                      '—'}
+                  </div>
+
+
+                  <div>
+                    Status:{' '}
+                    {shelter.status ||
+                      'OPERATIONAL'}
+                  </div>
+
+
+                  {isSelected && (
+                    <div
+                      className="
+                        mt-2
+                        pt-2
+                        border-t
+                        border-slate-300
+                        font-bold
+                        text-emerald-700
+                      "
+                    >
+                      ROUTE SELECTED
+                    </div>
+                  )}
+
+                </div>
+
+              </Popup>
+
+            </Marker>
           )
         })}
 
-      {/* 3. Distinct Relief Camps / Shelters (no duplicate cards for Mayong/Laharighat) */}
-      {selectedZone &&
-        filteredNearbySites.map((site, index) => (
-          <Marker
-            key={`shelter-${site.name}-${index}`}
-            position={[site.lat, site.lon]}
-            icon={createShelterIcon(site, activeHoveredSite?.name === site.name)}
-          >
-            <Popup>
-              <div className="p-1 min-w-[200px] text-slate-900">
-                <div className="flex items-center justify-between border-b pb-1 mb-1.5">
-                  <span className="text-xs font-bold text-slate-900">{site.name}</span>
-                  <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-mono font-semibold">
-                    {site.suitability}
-                  </span>
-                </div>
-                <div className="text-xs text-slate-600 space-y-1 font-mono">
-                  <p className="flex justify-between">
-                    <span>Distance:</span> <strong className="text-slate-800">{site.distanceKm} km</strong>
-                  </p>
-                  <p className="flex justify-between">
-                    <span>ETA:</span> <strong className="text-slate-800">{site.etaMin} mins</strong>
-                  </p>
-                  <p className="flex justify-between">
-                    <span>Free Capacity:</span>{' '}
-                    <strong className="text-emerald-700">
-                      {site.available} / {site.total} beds
-                    </strong>
-                  </p>
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
 
-      {/* 4. Hazard / Settlement Zone Markers — no popup card, click triggers zone selection */}
-      {hazardZones.map((zone) => {
-        const isSelected = selectedZone?.id === zone.id
-        return (
+      {/* =================================================
+          SETTLEMENTS
+
+          These are the existing hazard-zone /
+          settlement markers.
+          ================================================= */}
+
+      {showSettlements &&
+        hazardZones.map((zone) => {
+
+          const zoneLat =
+            zone.latitude ??
+            zone.lat ??
+            zone.coordinates?.[1]
+
+          const zoneLon =
+            zone.longitude ??
+            zone.lon ??
+            zone.lng ??
+            zone.coordinates?.[0]
+
+
+          if (
+            zoneLat == null ||
+            zoneLon == null
+          ) {
+            return null
+          }
+
+
+          return (
+            <Marker
+              key={`settlement-${zone.id}`}
+              position={[
+                zoneLat,
+                zoneLon,
+              ]}
+              icon={settlementIcon}
+
+              eventHandlers={{
+                click: () => {
+                  onSelectZone?.(
+                    zone
+                  )
+                },
+              }}
+            >
+
+              <Tooltip
+                direction="top"
+              >
+                {zone.name}
+              </Tooltip>
+
+
+              <Popup>
+
+                <div
+                  className="
+                    text-sm
+                    font-sans
+                    text-slate-900
+                    min-w-[170px]
+                  "
+                >
+
+                  <strong>
+                    {zone.name}
+                  </strong>
+
+
+                  <div className="mt-2">
+                    Population:{' '}
+                    {zone.population != null
+                      ? zone.population.toLocaleString()
+                      : '—'}
+                  </div>
+
+
+                  <div>
+                    Vulnerable:{' '}
+                    {zone.vulnerable != null
+                      ? zone.vulnerable.toLocaleString()
+                      : '—'}
+                  </div>
+
+
+                  <div>
+                    Risk:{' '}
+                    {zone.compositeRiskScore ??
+                      '—'}
+                  </div>
+
+                </div>
+
+              </Popup>
+
+            </Marker>
+          )
+        })}
+
+
+      {/* =================================================
+          SELECTED HAZARD MARKER
+
+          This preserves a distinct red hazard marker
+          for the currently selected settlement/zone.
+          ================================================= */}
+
+      {showRiskZones &&
+        selectedZone &&
+        selectedLat != null &&
+        selectedLon != null && (
+
           <Marker
-            key={`hazard-${zone.id}`}
-            position={[zone.lat, zone.lon]}
-            icon={createHazardIcon(zone, isSelected)}
-            eventHandlers={{
-              click: () => onSelectZone(zone),
-            }}
-          />
-        )
-      })}
+            position={[
+              selectedLat,
+              selectedLon,
+            ]}
+            icon={hazardIcon}
+            zIndexOffset={1000}
+          >
+
+            <Tooltip
+              direction="top"
+              offset={[
+                0,
+                -10,
+              ]}
+            >
+              ACTIVE HAZARD ZONE
+            </Tooltip>
+
+          </Marker>
+
+        )}
+
     </>
   )
 }
-
-export default HazardMapMarkers

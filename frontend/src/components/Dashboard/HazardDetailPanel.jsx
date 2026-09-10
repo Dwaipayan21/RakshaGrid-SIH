@@ -167,7 +167,7 @@ const priorityAction = isCritical
 
   return (
     <aside
-      className="w-80 xl:w-96 flex flex-col gap-3 shrink-0 z-20 overflow-y-auto max-h-full pr-1"
+      className="w-[360px] flex flex-col gap-3 shrink-0 z-20 overflow-y-auto max-h-full pr-1"
       data-purpose="live-hazard-detail-panel"
     >
       {/* 1. Header Card & Relocation Priority Banner */}
