@@ -9,6 +9,7 @@ import {
   checkRiskEngineHealth,
   assessSettlementRisk,
 } from './services/riskApi'
+import { checkBackendHealth } from './services/healthApi'
 
 const drawerTitles = {
   topo: 'Corridor Topography & Surge Clearance',
@@ -64,6 +65,16 @@ const App = () => {
         setRiskApiStatus('offline')
       })
   }, [])
+
+  useEffect(() => {
+        checkBackendHealth()
+            .then(data => {
+                console.log("✅ Backend connected:", data);
+            })
+            .catch(error => {
+                console.error("❌ Backend connection failed:", error);
+            });
+    }, []);
 
   // ---------------------------------------------------------
   // SELECTED ZONE

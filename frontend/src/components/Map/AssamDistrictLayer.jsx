@@ -221,7 +221,7 @@ const AssamDistrictLayer = ({ onDistrictClick }) => {
           <div class="district-details-stat"><span>Children:</span> <strong>${childrenStr}</strong></div>
           <div class="district-details-stat"><span>Working Age:</span> <strong>${workingAgeStr}</strong></div>
           <div class="district-details-stat"><span>Elderly:</span> <strong>${elderlyStr}</strong></div>
-          <div class="district-details-stat"><span>Area:</span> <strong>${areaStr}</strong></div>
+          <div class="district-details-stat"><span>Area:</span> <strong>${areaStr} sqr km</strong></div>
         </div>
       `
       : `
