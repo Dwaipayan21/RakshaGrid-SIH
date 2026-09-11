@@ -1,6 +1,7 @@
 import React, {
   useMemo,
   useState,
+  useEffect,
 } from 'react'
 
 import {
@@ -29,12 +30,28 @@ const Map = ({
   selectedZone,
   onSelectZone,
   activeHoveredSite,
+  mapLayers = {
+    riskZones: true,
+    settlements: true,
+    shelters: true,
+    roadNetwork: false,
+    hospitals: false,
+    floodExtent: false,
+  },
 }) => {
 
   const [
     selectedShelter,
     setSelectedShelter,
   ] = useState(null)
+
+
+  // Clear selected shelter if Shelters layer is toggled off
+  useEffect(() => {
+    if (!mapLayers?.shelters) {
+      setSelectedShelter(null)
+    }
+  }, [mapLayers?.shelters])
 
 
   // =========================================================
@@ -257,6 +274,10 @@ const Map = ({
             activeHoveredSite
           }
 
+          activeLayers={
+            mapLayers
+          }
+
         />
 
 
@@ -264,187 +285,189 @@ const Map = ({
             EVACUATION CENTERS / SHELTERS
             =================================================== */}
 
-        {shelters.map(
-          (shelter) => (
+        {mapLayers?.shelters &&
+          shelters.map(
+            (shelter) => (
 
-            <Marker
+              <Marker
 
-              key={
-                shelter.id
-              }
+                key={
+                  shelter.id
+                }
 
-              position={[
-                shelter.latitude,
-                shelter.longitude,
-              ]}
-
-              eventHandlers={{
-                click: () => {
-
-                  console.log(
-                    'Shelter clicked:',
-                    shelter.name
-                  )
-
-                  console.log(
-                    'Route start:',
-                    hazardLat,
-                    hazardLon
-                  )
-
-                  console.log(
-                    'Route end:',
-                    shelter.latitude,
-                    shelter.longitude
-                  )
-
-                  setSelectedShelter(
-                    shelter
-                  )
-
-                },
-              }}
-
-            >
-
-              <Popup
-                autoPan={true}
-                autoPanPaddingTopLeft={[
-                  40,
-                  100,
+                position={[
+                  shelter.latitude,
+                  shelter.longitude,
                 ]}
-                autoPanPaddingBottomRight={[
-                  40,
-                  40,
-                ]}
-                closeButton={true}
+
+                eventHandlers={{
+                  click: () => {
+
+                    console.log(
+                      'Shelter clicked:',
+                      shelter.name
+                    )
+
+                    console.log(
+                      'Route start:',
+                      hazardLat,
+                      hazardLon
+                    )
+
+                    console.log(
+                      'Route end:',
+                      shelter.latitude,
+                      shelter.longitude
+                    )
+
+                    setSelectedShelter(
+                      shelter
+                    )
+
+                  },
+                }}
+
               >
 
-                <div
-                  className="
-                    min-w-[220px]
-                    font-mono
-                    text-sm
-                  "
+                <Popup
+                  autoPan={true}
+                  autoPanPaddingTopLeft={[
+                    40,
+                    100,
+                  ]}
+                  autoPanPaddingBottomRight={[
+                    40,
+                    40,
+                  ]}
+                  closeButton={true}
                 >
 
-                  {/* ================================
-                      SHELTER NAME
-                      ================================ */}
-
                   <div
                     className="
-                      text-base
-                      font-bold
-                      mb-2
+                      min-w-[220px]
+                      font-mono
+                      text-sm
                     "
                   >
-                    {shelter.name}
-                  </div>
+
+                    {/* ================================
+                        SHELTER NAME
+                        ================================ */}
+
+                    <div
+                      className="
+                        text-base
+                        font-bold
+                        mb-2
+                      "
+                    >
+                      {shelter.name}
+                    </div>
 
 
-                  {/* ================================
-                      BASIC INFORMATION
-                      ================================ */}
+                    {/* ================================
+                        BASIC INFORMATION
+                        ================================ */}
 
-                  <div>
-                    Type:{' '}
-                    {shelter.type}
-                  </div>
+                    <div>
+                      Type:{' '}
+                      {shelter.type}
+                    </div>
 
-                  <div>
-                    District:{' '}
-                    {shelter.district}
-                  </div>
+                    <div>
+                      District:{' '}
+                      {shelter.district}
+                    </div>
 
-                  <div>
-                    Circle:{' '}
-                    {shelter.circle}
-                  </div>
+                    <div>
+                      Circle:{' '}
+                      {shelter.circle}
+                    </div>
 
-                  <div>
-                    Status:{' '}
-                    {shelter.status}
-                  </div>
-
-
-                  <hr
-                    className="
-                      my-2
-                      border-slate-300
-                    "
-                  />
+                    <div>
+                      Status:{' '}
+                      {shelter.status}
+                    </div>
 
 
-                  {/* ================================
-                      CAPACITY
-                      ================================ */}
-
-                  <div>
-                    Capacity:{' '}
-                    {shelter.capacity}
-                  </div>
-
-                  <div>
-                    Available:{' '}
-                    {shelter.availableCapacity}
-                  </div>
+                    <hr
+                      className="
+                        my-2
+                        border-slate-300
+                      "
+                    />
 
 
-                  <hr
-                    className="
-                      my-2
-                      border-slate-300
-                    "
-                  />
+                    {/* ================================
+                        CAPACITY
+                        ================================ */}
+
+                    <div>
+                      Capacity:{' '}
+                      {shelter.capacity}
+                    </div>
+
+                    <div>
+                      Available:{' '}
+                      {shelter.availableCapacity}
+                    </div>
 
 
-                  {/* ================================
+                    <hr
+                      className="
+                        my-2
+                        border-slate-300
+                      "
+                    />
+
+
+                    {/* ================================
+                        CENSUS INTELLIGENCE
+                        ================================ */}
+
+                    <div
+                      className="
+                        font-bold
+                        mb-1
+                      "
+                    >
                       CENSUS INTELLIGENCE
-                      ================================ */}
+                    </div>
 
-                  <div
-                    className="
-                      font-bold
-                      mb-1
-                    "
-                  >
-                    CENSUS INTELLIGENCE
+                    <div>
+                      Evacuation Zone:
+                      {' '}
+                      {shelter.name}
+                    </div>
+
+                    <div>
+                      Population data:
+                      {' '}
+                      Available
+                    </div>
+
+                    <div>
+                      Household data:
+                      {' '}
+                      Available
+                    </div>
+
                   </div>
 
-                  <div>
-                    Evacuation Zone:
-                    {' '}
-                    {shelter.name}
-                  </div>
+                </Popup>
 
-                  <div>
-                    Population data:
-                    {' '}
-                    Available
-                  </div>
+              </Marker>
 
-                  <div>
-                    Household data:
-                    {' '}
-                    Available
-                  </div>
-
-                </div>
-
-              </Popup>
-
-            </Marker>
-
-          )
-        )}
+            )
+          )}
 
 
         {/* ===================================================
             ROUTE
             =================================================== */}
 
-        {selectedShelter &&
+        {mapLayers?.roadNetwork &&
+          selectedShelter &&
           route && (
 
             <RouteLayer

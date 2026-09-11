@@ -10,24 +10,24 @@ const TacticalMapSection = ({
 }) => {
   const [layersOpen, setLayersOpen] = useState(false)
 
-  const [layers, setLayers] = useState({
-    risk: true,
+  const [mapLayers, setMapLayers] = useState({
+    riskZones: true,
     settlements: true,
     shelters: true,
-    roads: false,
+    roadNetwork: false,
     hospitals: false,
-    flood: false,
+    floodExtent: false,
   })
 
   const toggleLayer = (key) => {
-    setLayers((previous) => ({
+    setMapLayers((previous) => ({
       ...previous,
       [key]: !previous[key],
     }))
   }
 
   const activeLayerCount =
-    Object.values(layers).filter(Boolean).length
+    Object.values(mapLayers).filter(Boolean).length
 
   return (
     <section
@@ -155,12 +155,12 @@ const TacticalMapSection = ({
 
               <div className="p-2">
                 {[
-                  ['risk', 'Risk Zones', 'Composite risk classification', 'bg-red-400'],
+                  ['riskZones', 'Risk Zones', 'Composite risk classification', 'bg-red-400'],
                   ['settlements', 'Settlements', 'Vulnerable habitations', 'bg-cyan-400'],
                   ['shelters', 'Shelters', 'Evacuation facilities', 'bg-emerald-400'],
-                  ['roads', 'Road Network', 'Evacuation corridors', 'bg-amber-400'],
+                  ['roadNetwork', 'Road Network', 'Evacuation corridors', 'bg-amber-400'],
                   ['hospitals', 'Hospitals', 'Emergency medical facilities', 'bg-pink-400'],
-                  ['flood', 'Flood Extent', 'Hazard extent layer', 'bg-blue-400'],
+                  ['floodExtent', 'Flood Extent', 'Hazard extent layer', 'bg-blue-400'],
                 ].map(([key, label, description, dot]) => (
                   <button
                     key={key}
@@ -170,7 +170,7 @@ const TacticalMapSection = ({
                   >
                     <span
                       className={`w-2 h-2 rounded-full ${dot} ${
-                        layers[key]
+                        mapLayers[key]
                           ? 'opacity-100'
                           : 'opacity-20'
                       }`}
@@ -179,7 +179,7 @@ const TacticalMapSection = ({
                     <div className="flex-1">
                       <div
                         className={`text-[10px] font-mono font-bold ${
-                          layers[key]
+                          mapLayers[key]
                             ? 'text-slate-200'
                             : 'text-slate-500'
                         }`}
@@ -194,14 +194,14 @@ const TacticalMapSection = ({
 
                     <span
                       className={`w-7 h-4 rounded-full p-0.5 ${
-                        layers[key]
+                        mapLayers[key]
                           ? 'bg-cyan-500/30'
                           : 'bg-slate-800'
                       }`}
                     >
                       <span
                         className={`block w-3 h-3 rounded-full transition-transform ${
-                          layers[key]
+                          mapLayers[key]
                             ? 'bg-cyan-400 translate-x-3'
                             : 'bg-slate-600'
                         }`}
@@ -234,6 +234,7 @@ const TacticalMapSection = ({
           selectedZone={selectedZone}
           onSelectZone={onSelectZone}
           activeHoveredSite={activeHoveredSite}
+          mapLayers={mapLayers}
         />
 
         <DisasterAreaStatusLegend />

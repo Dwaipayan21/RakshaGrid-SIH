@@ -107,16 +107,16 @@ export default function HazardMapMarkers({
   // =======================================================
 
   const showRiskZones =
-    activeLayers.riskZones !== false
+    Boolean(activeLayers?.riskZones)
 
   const showSettlements =
-    activeLayers.settlements !== false
+    Boolean(activeLayers?.settlements)
 
   const showShelters =
-    activeLayers.shelters !== false
+    Boolean(activeLayers?.shelters)
 
   const showFloodExtent =
-    activeLayers.floodExtent !== false
+    Boolean(activeLayers?.floodExtent)
 
 
   // =======================================================
