@@ -21,7 +21,14 @@ rename_map = {
     "State": "state",
     "District": "district",
     "Subdistt": "subdistrict",
-    "Town/Village": "village_name",
+
+    # IMPORTANT:
+    # Town/Village contains the official Census village code
+    "Town/Village": "census_village_code",
+
+    # Name contains the actual village name
+    "Name": "village_name",
+
     "Ward": "ward",
     "Level": "level",
     "TRU": "rural_urban",
@@ -31,7 +38,10 @@ rename_map = {
 
 df = df.rename(columns=rename_map)
 
+# ------------------------------------------------------------
 # Keep village records only
+# ------------------------------------------------------------
+
 df = df[
     df["level"]
     .astype(str)
@@ -61,35 +71,43 @@ for col in text_columns:
         )
 
 # ------------------------------------------------------------
+# Clean Census village code
+# ------------------------------------------------------------
+
+df["census_village_code"] = (
+    df["census_village_code"]
+    .astype(str)
+    .str.replace(r"\.0$", "", regex=True)
+    .str.strip()
+)
+
+# ------------------------------------------------------------
 # Numeric fields
 # ------------------------------------------------------------
 
 if "population" in df.columns:
     df["population"] = pd.to_numeric(
-        df["population"], errors="coerce"
+        df["population"],
+        errors="coerce"
     ).fillna(0).astype(int)
 
 if "households" in df.columns:
     df["households"] = pd.to_numeric(
-        df["households"], errors="coerce"
+        df["households"],
+        errors="coerce"
     ).fillna(0).astype(int)
 
 # ------------------------------------------------------------
-# Temporary stable RakshaGrid village key
+# RakshaGrid internal village ID
 #
 # IMPORTANT:
-# This is NOT the official Census village code.
-# It is only an internal deterministic key until the
-# official Census location code is joined.
+# census_village_code is the official Census village code.
+# rakshagrid_village_id is our own application identifier.
 # ------------------------------------------------------------
 
 df["rakshagrid_village_id"] = (
     "AS-"
-    + df["district"].str.upper().str.replace(" ", "_")
-    + "-"
-    + df["subdistrict"].str.upper().str.replace(" ", "_")
-    + "-"
-    + df["village_name"].str.upper().str.replace(" ", "_")
+    + df["census_village_code"]
 )
 
 # ------------------------------------------------------------
@@ -98,18 +116,39 @@ df["rakshagrid_village_id"] = (
 
 print()
 print("========================================")
-print("RAKSHAGRID VILLAGE MASTER VALIDATION")
+print("RAKSHA GRID VILLAGE MASTER VALIDATION")
 print("========================================")
+
 print(f"Total villages: {len(df):,}")
-print(f"Missing village names: {df['village_name'].eq('').sum():,}")
+
 print(
-    "Duplicate internal IDs:",
+    "Missing village names:",
+    df["village_name"].eq("").sum()
+)
+
+print(
+    "Missing Census village codes:",
+    df["census_village_code"].eq("").sum()
+)
+
+print(
+    "Duplicate Census village codes:",
+    df["census_village_code"].duplicated().sum()
+)
+
+print(
+    "Duplicate RakshaGrid village IDs:",
     df["rakshagrid_village_id"].duplicated().sum()
 )
 
 print()
 print("District counts:")
-print(df["district"].value_counts().to_string())
+
+print(
+    df["district"]
+    .value_counts()
+    .to_string()
+)
 
 print()
 print(
@@ -123,11 +162,40 @@ print(
 )
 
 # ------------------------------------------------------------
-# Save
+# Show sample records
 # ------------------------------------------------------------
 
-df.to_csv(OUTPUT, index=False)
+print()
+print("Sample village records:")
+print()
+
+print(
+    df[
+        [
+            "district",
+            "subdistrict",
+            "census_village_code",
+            "village_name",
+            "population",
+            "households",
+            "rakshagrid_village_id",
+        ]
+    ]
+    .head(10)
+    .to_string(index=False)
+)
+
+# ------------------------------------------------------------
+# Save enriched dataset
+# ------------------------------------------------------------
+
+df.to_csv(
+    OUTPUT,
+    index=False
+)
 
 print()
-print(f"Created:")
+print("========================================")
+print("ENRICHED DATASET CREATED")
+print("========================================")
 print(OUTPUT)
