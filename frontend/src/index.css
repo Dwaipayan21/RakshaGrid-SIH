@@ -133,13 +133,30 @@ html.light .bg-slate-900\/70,
 html.light .bg-slate-900\/80,
 html.light .bg-slate-900\/90,
 html.light .bg-slate-900,
+html.light .bg-slate-950\/95,
+html.light .bg-slate-950\/98,
+html.light .bg-slate-950,
 html.light .bg-slate-800\/90,
 html.light .bg-slate-800 {
   background-color: #f1f5f9 !important;
   border-color: #cbd5e1 !important;
 }
 
+html.light .border-slate-600,
+html.light .border-slate-700,
+html.light .border-slate-800 {
+  border-color: #cbd5e1 !important;
+}
+
+html.light .text-slate-600 {
+  color: #64748b !important;
+}
+
 html.light .hover\:bg-slate-800\/70:hover {
+  background-color: #e2e8f0 !important;
+}
+
+html.light .hover\:bg-slate-900:hover {
   background-color: #e2e8f0 !important;
 }
 
@@ -316,7 +333,7 @@ html.light .plain-district-name-text {
 }
 
 
-/* Hardcoded BG-AMBER 50 District Details Card (Does NOT change with dark/light mode) */
+/* District details card */
 .district-details-card-amber {
   background-color: #fffbeb !important; /* bg-amber-50 */
   border: 1.5px solid #fcd34d !important; /* border-amber-300 */
@@ -330,6 +347,38 @@ html.light .plain-district-name-text {
   white-space: nowrap !important;
   min-width: 130px !important;
   position: relative !important;
+}
+
+html.dark .district-details-card-amber {
+  background-color: rgba(15, 23, 42, 0.96) !important;
+  border-color: #475569 !important;
+  color: #f8fafc !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45), 0 0 12px rgba(56, 189, 248, 0.12) !important;
+}
+
+html.dark .district-details-card-amber .district-details-title {
+  color: #f8fafc !important;
+  border-bottom-color: #334155 !important;
+}
+
+html.dark .district-details-card-amber .district-details-stat {
+  color: #cbd5e1 !important;
+}
+
+html.dark .district-details-card-amber .district-details-stat span {
+  color: #94a3b8 !important;
+}
+
+html.dark .district-details-card-amber .district-details-stat strong {
+  color: #f8fafc !important;
+}
+
+html.dark .district-details-close {
+  color: #94a3b8 !important;
+}
+
+html.dark .district-details-close:hover {
+  color: #f8fafc !important;
 }
 
 .district-details-close {

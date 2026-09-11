@@ -1,4 +1,5 @@
 import React from 'react'
+import { createPortal } from 'react-dom'
 
 // activeKey: null | 'topo' | 'convoy' | 'telemetry' | 'matrix' | 'params'
 // Pass the title + body content per key from the parent, or extend this file
@@ -6,14 +7,14 @@ import React from 'react'
 const Drawer = ({ activeKey, onClose, title, children }) => {
   const isOpen = Boolean(activeKey)
 
-  return (
+  return createPortal(
     <>
       <div
         onClick={onClose}
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998] transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       />
       <div
-        className={`fixed right-0 top-0 bottom-0 w-full max-w-lg bg-tactical-surface border-l border-tactical-border z-50 p-6 flex flex-col shadow-2xl transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed right-0 top-0 bottom-0 w-full max-w-lg bg-tactical-surface border-l border-tactical-border z-[9999] p-6 flex flex-col shadow-2xl transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-white">{title}</h3>
@@ -22,6 +23,8 @@ const Drawer = ({ activeKey, onClose, title, children }) => {
         <div className="flex-1 overflow-y-auto">{children}</div>
       </div>
     </>
+    ,
+    document.body
   )
 }
 

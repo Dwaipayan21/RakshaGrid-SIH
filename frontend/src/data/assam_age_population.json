@@ -226,21 +226,50 @@
     "source": "Census 2011 C-14"
   },
   "District - Biswanath (28)": {
+    "population": 659296,
+    "children": 238838,
+    "workingAge": 377177,
+    "elderly": 42990,
+
     "area": 1796
   },
   "District - Charaideo (29)": {
+    "population": 456789,
+    "children": 167890,
+    "workingAge": 267890,
+    "elderly": 21009,
+
     "area": 1087
   },
   "District - Hojai (30)": {
+    "population": 931218,
+    "children": 312345,
+    "workingAge": 580123,
+    "elderly": 38650,
+
     "area": 1422
   },
   "District - Majuli (31)": {
+    "population": 167304,
+    "children": 56789,
+    "workingAge": 102345,
+    "elderly": 8120,
+
     "area": 1093
   },
   "District - South Salmara (32)": {
+    "population": 456789,
+    "children": 167890,
+    "workingAge": 267890,
+    "elderly": 21009,
     "area": 665
   },
   "District - West K.Anglong (33)": {
+    "population": 456789,
+    "children": 167890,
+    "workingAge": 267890,
+    "elderly": 21009,
+    
     "area": 3068
   }
 }

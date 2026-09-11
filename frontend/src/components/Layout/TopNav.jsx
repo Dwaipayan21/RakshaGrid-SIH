@@ -1,10 +1,35 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 const TopNav = ({ theme = 'dark', onToggleTheme = () => {} }) => {
   const isLight = theme === 'light'
 
+  const [showLogin, setShowLogin] = useState(false)
+  const [selectedUser, setSelectedUser] = useState(null)
+  const [showHazards, setShowHazards] = useState(false)
+  const [selectedHazard, setSelectedHazard] = useState(null)
+
+  const hazards = ['Flood', 'Earthquake', 'Landslide', 'Cyclone']
+
+  const users = [
+    { name: 'Dwaipayan Barui', role: ' District Disaster Management Officer', initials: 'RS' },
+    { name: 'Bidisha Barui', role: 'National Disaster Response Officer', initials: 'AD' },
+    { name: 'Soumya Barui', role: 'State Disaster Management Officer', initials: 'VS' },
+    { name: 'Trishnika Barui', role: 'National Disaster Management Officer', initials: 'PB' },
+    { name: 'Rajashree Barui', role: 'Municipal Corporation Officer', initials: 'AM' },
+  ]
+
+  const handleUserSelect = (user) => {
+    setSelectedUser(user)
+    setShowLogin(false)
+  }
+
+  const handleHazardSelect = (hazard) => {
+    setSelectedHazard(hazard)
+    setShowHazards(false)
+  }
+
   return (
-    <header className="h-16 border-b border-tactical-border bg-tactical-surface/90 backdrop-blur-md px-6 flex items-center justify-between z-30 shrink-0 transition-colors duration-300">
+    <header className="h-16 border-b border-tactical-border bg-tactical-surface/90 backdrop-blur-md px-6 flex items-center justify-between z-[2000] shrink-0 transition-colors duration-300">
       {/* Brand & Mission Context */}
       <div className="flex items-center space-x-6">
         <div className="flex items-center space-x-3">
@@ -35,17 +60,51 @@ const TopNav = ({ theme = 'dark', onToggleTheme = () => {} }) => {
 
         {/* Live Location & Surge Alert Indicator */}
         <div className="hidden lg:flex items-center space-x-3 text-xs">
+          <div className="relative z-[60]">
+            <button
+              onClick={() => {
+                setShowHazards(!showHazards)
+                setShowLogin(false)
+              }}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-tactical-card hover:bg-tactical-cardHover border border-tactical-border transition"
+              aria-expanded={showHazards}
+              aria-haspopup="menu"
+            >
+              <span className="text-xs font-mono font-bold text-slate-200">
+                {selectedHazard || 'Hazards'}
+              </span>
+              <svg className={`w-3.5 h-3.5 text-slate-400 transition-transform ${showHazards ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+              </svg>
+            </button>
+
+            {showHazards && (
+              <div className="absolute left-0 top-full mt-2 w-44 rounded-xl bg-tactical-surface border border-tactical-border shadow-2xl overflow-hidden z-[100]" role="menu">
+                <div className="px-3 py-2 border-b border-tactical-border">
+                  <p className="text-[10px] text-slate-500 font-mono tracking-widest">Select Hazard</p>
+                </div>
+
+                {hazards.map((hazard) => (
+                  <button
+                    key={hazard}
+                    onClick={() => handleHazardSelect(hazard)}
+                    className="w-full flex items-center justify-between px-3 py-2.5 text-left text-xs text-slate-300 hover:bg-tactical-cardHover hover:text-white transition"
+                    role="menuitem"
+                  >
+                    <span>{hazard}</span>
+                    {selectedHazard === hazard && <span className="text-emerald-400">✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="flex items-center space-x-2 px-2.5 py-1 rounded bg-tactical-card border border-tactical-border">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-            <span className="text-red-400 font-semibold tracking-wide uppercase">
+            <span className="text-red-400 font-semibold tracking-wide">
               Red Alert: Morigaon Sector
             </span>
           </div>
-          <span className="text-slate-400 font-mono">Assam Pilot / Revenue Circles</span>
-          <span className="text-slate-500 font-mono">|</span>
-          <span className="text-slate-400 font-mono">
-            RUN-ID: <span className="text-slate-200">RG-8842-AX</span>
-          </span>
         </div>
       </div>
 
@@ -83,14 +142,47 @@ const TopNav = ({ theme = 'dark', onToggleTheme = () => {} }) => {
           </span>
         </div>
 
-        <div className="flex items-center space-x-3 pl-2 border-l border-tactical-border">
-          <div className="text-right hidden sm:block">
-            <div className="text-xs font-semibold text-slate-200">Capt. R. Sharma</div>
-            <div className="text-[10px] text-slate-400 font-mono">Lead Incident Cmdr</div>
-          </div>
-          <div className="w-9 h-9 rounded-full bg-slate-700 border border-slate-500 flex items-center justify-center font-bold text-xs text-slate-200 ring-2 ring-emerald-500/20">
-            RS
-          </div>
+        <div className="relative pl-2 border-l border-tactical-border">
+          <button
+            onClick={() => setShowLogin(!showLogin)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-tactical-card hover:bg-tactical-cardHover border border-tactical-border transition"
+            aria-expanded={showLogin}
+            aria-haspopup="menu"
+          >
+            <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path d="M15 19a4 4 0 00-8 0m4-8a3 3 0 100-6 3 3 0 000 6zm5 2v6m3-3h-6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+            </svg>
+            <span className="text-xs font-mono font-bold text-slate-200">Login</span>
+            <svg className={`w-3.5 h-3.5 text-slate-400 transition-transform ${showLogin ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+            </svg>
+          </button>
+
+          {showLogin && (
+            <div className="absolute right-0 top-full mt-2 w-64 rounded-xl bg-tactical-surface border border-tactical-border shadow-2xl overflow-hidden z-50" role="menu">
+              <div className="px-4 py-3 border-b border-tactical-border">
+                <p className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Login As</p>
+              </div>
+
+              {users.map((user) => (
+                <button
+                  key={user.name}
+                  onClick={() => handleUserSelect(user)}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-tactical-cardHover transition"
+                  role="menuitem"
+                >
+                  <div className="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center text-[10px] font-bold text-slate-300">
+                    {user.initials}
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-xs font-semibold text-slate-200">{user.name}</div>
+                    <div className="text-[10px] text-slate-500 font-mono">{user.role}</div>
+                  </div>
+                  {selectedUser?.name === user.name && <span className="text-emerald-400 text-xs">✓</span>}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </header>

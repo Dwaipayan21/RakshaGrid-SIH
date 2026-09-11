@@ -167,7 +167,7 @@ const priorityAction = isCritical
 
   return (
     <aside
-      className="w-[360px] flex flex-col gap-3 shrink-0 z-20 overflow-y-auto max-h-full pr-1"
+      className="w-[360px] flex flex-col gap-3 shrink-0 overflow-y-auto max-h-full pr-1"
       data-purpose="live-hazard-detail-panel"
     >
       {/* 1. Header Card & Relocation Priority Banner */}
@@ -416,7 +416,7 @@ const priorityAction = isCritical
 
       {/* 4. Quick Secondary Icon Deck Navigation (Elev, Route, Supp, Matrix, Config) */}
       <div
-        className="bg-tactical-surface border border-tactical-border p-3.5 rounded-2xl flex items-center justify-between gap-1 shadow-lg shrink-0"
+        className="relative z-[1500] bg-tactical-surface border border-tactical-border p-3.5 rounded-2xl flex items-center justify-between gap-1 shadow-lg shrink-0"
         data-purpose="secondary-action-deck"
       >
         {iconDeck.map((icon) => (

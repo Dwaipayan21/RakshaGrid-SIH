@@ -14,23 +14,67 @@ import L from 'leaflet'
 // HAZARD ICON
 // =========================================================
 
-const hazardIcon = L.divIcon({
-  className: 'hazard-marker',
+const getHazardColor = (riskScore) => {
+  const score = Number(riskScore || 0)
 
-  html: `
-    <div style="
-      width:16px;
-      height:16px;
-      border-radius:50%;
-      background:#ef4444;
-      border:3px solid rgba(255,255,255,.9);
-      box-shadow:0 0 18px rgba(239,68,68,.8);
-    "></div>
-  `,
+  if (score > 0.8) {
+    return {
+      solid: '#ef4444',
+      glow: 'rgba(239,68,68,.8)',
+    }
+  }
 
-  iconSize: [16, 16],
-  iconAnchor: [8, 8],
-})
+  if (score >= 0.5) {
+    return {
+      solid: '#f59e0b',
+      glow: 'rgba(245,158,11,.8)',
+    }
+  }
+
+  return {
+    solid: '#22c55e',
+    glow: 'rgba(34,197,94,.8)',
+  }
+}
+
+const createHazardIcon = (riskScore) => {
+  const { solid, glow } = getHazardColor(riskScore)
+
+  return L.divIcon({
+    className: 'hazard-marker',
+
+    html: `
+      <div style="
+        position:relative;
+        width:32px;
+        height:32px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+      ">
+        <div style="
+          position:absolute;
+          inset:0;
+          border:2px dashed ${solid};
+          border-radius:50%;
+          box-shadow:0 0 18px ${glow};
+        "></div>
+        <div style="
+          position:relative;
+          width:16px;
+          height:16px;
+          border-radius:50%;
+          background:${solid};
+          border:3px solid rgba(255,255,255,.9);
+          box-shadow:0 0 18px ${glow};
+        "></div>
+      </div>
+    `,
+
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+  })
+}
 
 
 // =========================================================
@@ -211,9 +255,9 @@ export default function HazardMapMarkers({
             ]}
             radius={1800}
             pathOptions={{
-              color: '#ef4444',
+              color: getHazardColor(selectedZone.compositeRiskScore).solid,
               weight: 2.5,
-              fillColor: '#ef4444',
+              fillColor: getHazardColor(selectedZone.compositeRiskScore).solid,
               fillOpacity: 0.12,
             }}
           />
@@ -528,11 +572,10 @@ export default function HazardMapMarkers({
 
 
       {/* =================================================
-          SELECTED HAZARD MARKER
+        SELECTED HAZARD MARKER
 
-          This preserves a distinct red hazard marker
-          for the currently selected settlement/zone.
-          ================================================= */}
+        Marker color follows the selected zone risk score.
+        ================================================= */}
 
       {showRiskZones &&
         selectedZone &&
@@ -544,7 +587,7 @@ export default function HazardMapMarkers({
               selectedLat,
               selectedLon,
             ]}
-            icon={hazardIcon}
+            icon={createHazardIcon(selectedZone.compositeRiskScore)}
             zIndexOffset={1000}
           >
 
