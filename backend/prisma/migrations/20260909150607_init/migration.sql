@@ -1,3 +1,4 @@
+CREATE EXTENSION IF NOT EXISTS postgis;
 -- CreateEnum
 CREATE TYPE "RiskClass" AS ENUM ('GREEN', 'YELLOW', 'ORANGE', 'RED');
 
