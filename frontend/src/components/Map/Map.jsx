@@ -1,5 +1,4 @@
 import React, {
-  useEffect,
   useMemo,
   useState,
 } from 'react'
@@ -10,547 +9,27 @@ import {
   Marker,
   Popup,
   ZoomControl,
-  Polyline,
-  CircleMarker,
-  useMap,
 } from 'react-leaflet'
 
 import 'leaflet/dist/leaflet.css'
 
 import HazardMapMarkers from '../Dashboard/HazardMapMarkers'
+
 import AssamDistrictLayer from './AssamDistrictLayer'
 
 import useRoute from '../../hooks/useRoute'
+
 import RouteLayer from './RouteLayer'
 
 import shelters from '../../data/shelters'
 
 
-// =========================================================
-// MAP VIEW SYNC
-// =========================================================
-
-const MapViewSync = ({ center }) => {
-  const map = useMap()
-
-  useEffect(() => {
-    if (!center) return
-
-    map.flyTo(
-      center,
-      12,
-      {
-        duration: 0.8,
-      }
-    )
-  }, [center, map])
-
-  return null
-}
-
-
-// =========================================================
-// OPENSTREETMAP / OVERPASS API
-// =========================================================
-
-const OSM_API =
-  'https://overpass-api.de/api/interpreter'
-
-
-// =========================================================
-// OPERATIONAL GIS LAYERS
-//
-// These layers are independent from the original
-// hazard/shelter/OSRM system.
-//
-// roads = OpenStreetMap road network
-// hospitals = OpenStreetMap hospitals/clinics
-// =========================================================
-
-const OperationalOsmLayers = ({
-  center,
-  showRoads,
-  showHospitals,
-}) => {
-
-  const [roads, setRoads] =
-    useState([])
-
-  const [hospitals, setHospitals] =
-    useState([])
-
-  const [loadingRoads, setLoadingRoads] =
-    useState(false)
-
-  const [loadingHospitals, setLoadingHospitals] =
-    useState(false)
-
-
-  // =======================================================
-  // LOAD ROADS
-  // =======================================================
-
-  useEffect(() => {
-
-    if (!showRoads) {
-      setRoads([])
-      setLoadingRoads(false)
-      return
-    }
-
-    if (!center) return
-
-    const controller =
-      new AbortController()
-
-    const [lat, lon] = center
-
-    const south = lat - 0.12
-    const north = lat + 0.12
-    const west = lon - 0.12
-    const east = lon + 0.12
-
-    const query = `
-      [out:json][timeout:25];
-
-      way["highway"]
-      (${south},${west},${north},${east});
-
-      out geom;
-    `
-
-
-    const loadRoads = async () => {
-
-      try {
-
-        setLoadingRoads(true)
-
-        const response =
-          await fetch(
-            OSM_API,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type':
-                  'text/plain',
-              },
-              body: query,
-              signal:
-                controller.signal,
-            }
-          )
-
-
-        if (!response.ok) {
-          throw new Error(
-            'Unable to load road network'
-          )
-        }
-
-
-        const data =
-          await response.json()
-
-
-        const roadFeatures =
-          (data.elements || [])
-            .filter(
-              (way) =>
-                way.geometry &&
-                way.geometry.length > 1
-            )
-            .map((way) => ({
-              id: way.id,
-
-              type:
-                way.tags?.highway ||
-                'road',
-
-              name:
-                way.tags?.name ||
-                'Unnamed road',
-
-              coordinates:
-                way.geometry.map(
-                  (point) => [
-                    point.lat,
-                    point.lon,
-                  ]
-                ),
-            }))
-
-
-        setRoads(
-          roadFeatures
-        )
-
-      } catch (error) {
-
-        if (
-          error.name !==
-          'AbortError'
-        ) {
-          console.error(
-            'OSM road layer error:',
-            error
-          )
-        }
-
-      } finally {
-
-        if (
-          !controller.signal.aborted
-        ) {
-          setLoadingRoads(false)
-        }
-
-      }
-    }
-
-
-    loadRoads()
-
-
-    return () =>
-      controller.abort()
-
-  }, [
-    center,
-    showRoads,
-  ])
-
-
-  // =======================================================
-  // LOAD HOSPITALS / CLINICS
-  // =======================================================
-
-  useEffect(() => {
-
-    if (!showHospitals) {
-      setHospitals([])
-      setLoadingHospitals(false)
-      return
-    }
-
-    if (!center) return
-
-    const controller =
-      new AbortController()
-
-    const [lat, lon] = center
-
-    const south = lat - 0.15
-    const north = lat + 0.15
-    const west = lon - 0.15
-    const east = lon + 0.15
-
-    const query = `
-      [out:json][timeout:25];
-
-      (
-        node["amenity"="hospital"]
-        (${south},${west},${north},${east});
-
-        way["amenity"="hospital"]
-        (${south},${west},${north},${east});
-
-        node["amenity"="clinic"]
-        (${south},${west},${north},${east});
-
-        way["amenity"="clinic"]
-        (${south},${west},${north},${east});
-      );
-
-      out center;
-    `
-
-
-    const loadHospitals =
-      async () => {
-
-        try {
-
-          setLoadingHospitals(
-            true
-          )
-
-          const response =
-            await fetch(
-              OSM_API,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type':
-                    'text/plain',
-                },
-                body: query,
-                signal:
-                  controller.signal,
-              }
-            )
-
-
-          if (!response.ok) {
-            throw new Error(
-              'Unable to load hospitals'
-            )
-          }
-
-
-          const data =
-            await response.json()
-
-
-          const medicalFeatures =
-            (data.elements || [])
-              .map((item) => {
-
-                const latitude =
-                  item.lat ??
-                  item.center?.lat
-
-                const longitude =
-                  item.lon ??
-                  item.center?.lon
-
-                if (
-                  latitude == null ||
-                  longitude == null
-                ) {
-                  return null
-                }
-
-                return {
-                  id: item.id,
-
-                  name:
-                    item.tags?.name ||
-                    'Medical Facility',
-
-                  type:
-                    item.tags?.amenity ===
-                    'hospital'
-                      ? 'Hospital'
-                      : 'Clinic',
-
-                  latitude,
-                  longitude,
-                }
-              })
-              .filter(Boolean)
-
-
-          setHospitals(
-            medicalFeatures
-          )
-
-        } catch (error) {
-
-          if (
-            error.name !==
-            'AbortError'
-          ) {
-            console.error(
-              'OSM hospital layer error:',
-              error
-            )
-          }
-
-        } finally {
-
-          if (
-            !controller.signal.aborted
-          ) {
-            setLoadingHospitals(
-              false
-            )
-          }
-
-        }
-      }
-
-
-    loadHospitals()
-
-
-    return () =>
-      controller.abort()
-
-  }, [
-    center,
-    showHospitals,
-  ])
-
-
-  // =======================================================
-  // RENDER GIS LAYERS
-  // =======================================================
-
-  return (
-    <>
-      {/* =================================================
-          ROAD NETWORK
-          ================================================= */}
-
-      {showRoads &&
-        roads.map((road) => {
-
-          const majorRoad =
-            [
-              'motorway',
-              'trunk',
-              'primary',
-              'secondary',
-            ].includes(
-              road.type
-            )
-
-
-          return (
-            <Polyline
-              key={`road-${road.id}`}
-              positions={
-                road.coordinates
-              }
-              pathOptions={{
-                color: majorRoad
-                  ? '#fbbf24'
-                  : '#94a3b8',
-
-                weight: majorRoad
-                  ? 3
-                  : 1.5,
-
-                opacity: majorRoad
-                  ? 0.9
-                  : 0.5,
-              }}
-            >
-              <Popup>
-                <div className="text-slate-900">
-
-                  <strong>
-                    {road.name}
-                  </strong>
-
-                  <br />
-
-                  <span className="text-xs">
-                    Road type:{' '}
-                    {road.type}
-                  </span>
-
-                </div>
-              </Popup>
-            </Polyline>
-          )
-        })}
-
-
-      {/* =================================================
-          HOSPITALS / CLINICS
-          ================================================= */}
-
-      {showHospitals &&
-        hospitals.map(
-          (facility) => (
-
-            <CircleMarker
-              key={`medical-${facility.id}`}
-              center={[
-                facility.latitude,
-                facility.longitude,
-              ]}
-              radius={7}
-              pathOptions={{
-                color: '#f0abfc',
-                fillColor: '#d946ef',
-                fillOpacity: 0.9,
-                weight: 2,
-              }}
-            >
-
-              <Popup>
-
-                <div className="text-slate-900">
-
-                  <strong>
-                    {facility.name}
-                  </strong>
-
-                  <br />
-
-                  <span className="text-xs">
-                    {facility.type}
-                  </span>
-
-                </div>
-
-              </Popup>
-
-            </CircleMarker>
-
-          )
-        )}
-
-
-      {/* =================================================
-          GIS LOADING
-          ================================================= */}
-
-      {(loadingRoads ||
-        loadingHospitals) && (
-
-        <div
-          className="
-            absolute
-            top-3
-            right-3
-            z-[900]
-            bg-slate-950/95
-            border
-            border-cyan-500/30
-            rounded-lg
-            px-3
-            py-2
-            text-[9px]
-            font-mono
-            font-bold
-            text-cyan-300
-            shadow-xl
-          "
-        >
-          LOADING GIS DATA...
-        </div>
-
-      )}
-
-    </>
-  )
-}
-
-
-// =========================================================
-// MAIN MAP
-// =========================================================
-
 const Map = ({
-  hazardZones = [],
+  hazardZones,
   selectedZone,
   onSelectZone,
   activeHoveredSite,
-  activeLayers = {},
 }) => {
-
-
-  // =======================================================
-  // SELECTED SHELTER
-  //
-  // IMPORTANT:
-  // This is retained specifically so your original
-  // OSRM routing continues to work.
-  // =======================================================
 
   const [
     selectedShelter,
@@ -558,37 +37,15 @@ const Map = ({
   ] = useState(null)
 
 
-  // =======================================================
-  // LAYER VISIBILITY
-  // =======================================================
-
-  const showRiskZones =
-    activeLayers.riskZones !== false
-
-  const showSettlements =
-    activeLayers.settlements !== false
-
-  const showShelters =
-    activeLayers.shelters !== false
-
-  const showRoads =
-    activeLayers.roads === true
-
-  const showHospitals =
-    activeLayers.hospitals === true
-
-  const showFloodExtent =
-    activeLayers.floodExtent !== false
-
-
-  // =======================================================
-  // HAZARD COORDINATES
-  // =======================================================
+  // =========================================================
+  // SELECTED HAZARD COORDINATES
+  // =========================================================
 
   const hazardLat =
     selectedZone?.latitude ??
     selectedZone?.lat ??
     selectedZone?.coordinates?.[1]
+
 
   const hazardLon =
     selectedZone?.longitude ??
@@ -597,102 +54,53 @@ const Map = ({
     selectedZone?.coordinates?.[0]
 
 
-  // =======================================================
-  // MAP CENTER
-  // =======================================================
+  // =========================================================
+  // ROUTE START
+  // =========================================================
 
-  const center = useMemo(
-    () => [
-      hazardLat ?? 26.35,
-      hazardLon ?? 92.27,
-    ],
-    [
+  const routeStart = useMemo(() => {
+
+    if (
+      hazardLat == null ||
+      hazardLon == null
+    ) {
+      return null
+    }
+
+    return [
       hazardLat,
       hazardLon,
     ]
-  )
+
+  }, [
+    hazardLat,
+    hazardLon,
+  ])
 
 
-  // =======================================================
-  // OSRM ROUTE START
-  //
-  // Hazard / selected settlement
-  // =======================================================
+  // =========================================================
+  // ROUTE END
+  // =========================================================
 
-  const routeStart =
-    useMemo(() => {
+  const routeEnd = useMemo(() => {
 
-      if (
-        hazardLat == null ||
-        hazardLon == null
-      ) {
-        return null
-      }
+    if (!selectedShelter) {
+      return null
+    }
 
-      return [
-        hazardLat,
-        hazardLon,
-      ]
+    return [
+      selectedShelter.latitude,
+      selectedShelter.longitude,
+    ]
 
-    }, [
-      hazardLat,
-      hazardLon,
-    ])
+  }, [
+    selectedShelter,
+  ])
 
 
-  // =======================================================
-  // OSRM ROUTE END
-  //
-  // Supports both:
-  //
-  // latitude / longitude
-  //
-  // AND
-  //
-  // lat / lon
-  //
-  // so existing shelter data continues working.
-  // =======================================================
-
-  const routeEnd =
-    useMemo(() => {
-
-      if (!selectedShelter) {
-        return null
-      }
-
-
-      const shelterLat =
-        selectedShelter.latitude ??
-        selectedShelter.lat
-
-
-      const shelterLon =
-        selectedShelter.longitude ??
-        selectedShelter.lon
-
-
-      if (
-        shelterLat == null ||
-        shelterLon == null
-      ) {
-        return null
-      }
-
-
-      return [
-        shelterLat,
-        shelterLon,
-      ]
-
-    }, [
-      selectedShelter,
-    ])
-
-
-  // =======================================================
-  // ORIGINAL OSRM ROUTING HOOK
-  // =======================================================
+  // =========================================================
+  // ROUTE ENGINE
+  // =========================================================
 
   const {
     route,
@@ -704,231 +112,427 @@ const Map = ({
   )
 
 
-  // =======================================================
-  // SHELTER SELECTION
-  //
-  // Selecting a shelter causes useRoute() to execute
-  // again and fetch the shortest driving route.
-  // =======================================================
+  // =========================================================
+  // MAP CENTER
+  // =========================================================
 
-  const handleShelterClick =
-    (shelter) => {
-
-      setSelectedShelter(
-        shelter
-      )
-
-    }
+  const center = [
+    hazardLat ?? 26.35,
+    hazardLon ?? 92.27,
+  ]
 
 
-  // =======================================================
+  // =========================================================
   // RENDER
-  // =======================================================
+  // =========================================================
 
   return (
 
-    <MapContainer
-      center={center}
-      zoom={12}
-      scrollWheelZoom={true}
-      zoomControl={false}
-      style={{
-        height: '100%',
-        width: '100%',
-        zIndex: 1,
-      }}
+    <div
+      className="
+        relative
+        h-full
+        w-full
+        overflow-hidden
+        rounded-2xl
+      "
     >
 
-      {/* =================================================
-          LEAFLET ZOOM CONTROL
+      {/* =====================================================
+          LEAFLET POPUP PRIORITY
+          Keeps evacuation-center details above map controls
+          and the Morigaon pilot selector.
+          ===================================================== */}
 
-          Bottom-right prevents collision with:
-          - Morigaon selector
-          - Layers button
-          ================================================= */}
+      <style>
+        {`
+          .leaflet-popup-pane {
+            z-index: 2000 !important;
+          }
 
-      <ZoomControl
-        position="bottomright"
-      />
+          .leaflet-popup {
+            z-index: 2000 !important;
+          }
+
+          .leaflet-popup-content-wrapper {
+            z-index: 2000 !important;
+          }
+
+          .leaflet-popup-tip {
+            z-index: 2000 !important;
+          }
+        `}
+      </style>
 
 
-      {/* =================================================
-          MAP CENTER SYNC
-          ================================================= */}
+      <MapContainer
 
-      <MapViewSync
         center={center}
-      />
 
+        zoom={12}
 
-      {/* =================================================
-          SATELLITE BASEMAP
-          ================================================= */}
+        minZoom={7}
 
-      <TileLayer
-        url={`https://api.maptiler.com/maps/hybrid-v4/{z}/{x}/{y}.jpg?key=${import.meta.env.VITE_MAPTILER_API_KEY}`}
-        tileSize={512}
-        zoomOffset={-1}
-        attribution="&copy; MapTiler &copy; OpenStreetMap contributors"
-      />
+        maxZoom={18}
 
+        scrollWheelZoom={true}
 
-      {/* =================================================
-          ASSAM DISTRICT BOUNDARIES
-          ================================================= */}
+        zoomControl={false}
 
-      <AssamDistrictLayer
-        onDistrictClick={(
-          district
-        ) => {
-          console.log(
-            'Selected district:',
-            district
-          )
+        style={{
+          height: '100%',
+          width: '100%',
+          zIndex: 1,
         }}
-      />
+
+      >
+
+        {/* ===================================================
+            SATELLITE BASE MAP
+            =================================================== */}
+
+        <TileLayer
+
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+
+          attribution="
+            Tiles &copy; Esri —
+            Source: Esri, Maxar, Earthstar Geographics,
+            and the GIS User Community
+          "
+
+          maxZoom={19}
+
+        />
 
 
-      {/* =================================================
-          EXISTING HAZARD / SETTLEMENT / SHELTER SYSTEM
+        {/* ===================================================
+            ZOOM CONTROL
+            =================================================== */}
 
-          IMPORTANT:
-          This is where the original marker system remains.
-          ================================================= */}
-
-      <HazardMapMarkers
-        hazardZones={hazardZones}
-        selectedZone={selectedZone}
-        shelters={shelters}
-        activeLayers={activeLayers}
-        onSelectZone={onSelectZone}
-        activeHoveredSite={activeHoveredSite}
-        selectedShelter={selectedShelter}
-        onShelterSelect={handleShelterClick}
-        showRiskZones={showRiskZones}
-        showSettlements={showSettlements}
-        showShelters={showShelters}
-        showFloodExtent={showFloodExtent}
-      />
+        <ZoomControl
+          position="bottomright"
+        />
 
 
-      {/* =================================================
-          OSM ROADS + HOSPITALS
-          ================================================= */}
+        {/* ===================================================
+            ASSAM DISTRICT BOUNDARIES
+            =================================================== */}
 
-      <OperationalOsmLayers
-        center={center}
+        <AssamDistrictLayer
 
-        showRoads={
-          showRoads
-        }
+          onDistrictClick={
+            (district) => {
 
-        showHospitals={
-          showHospitals
-        }
-      />
+              console.log(
+                'Selected district:',
+                district
+              )
+
+            }
+          }
+
+        />
 
 
-      {/* =================================================
-          ORIGINAL OSRM ROUTE
+        {/* ===================================================
+            HAZARD MARKERS
+            =================================================== */}
 
-          DO NOT REMOVE THIS.
+        <HazardMapMarkers
 
-          When a shelter is selected:
+          hazardZones={
+            hazardZones
+          }
 
-          selectedShelter
-                ↓
-          routeEnd
-                ↓
-          useRoute()
-                ↓
-          OSRM
-                ↓
-          route
-                ↓
-          RouteLayer
+          selectedZone={
+            selectedZone
+          }
 
-          This restores the shortest driving route.
-          ================================================= */}
+          onSelectZone={
+            onSelectZone
+          }
 
-      {selectedShelter &&
-        route && (
+          activeHoveredSite={
+            activeHoveredSite
+          }
 
-          <RouteLayer
-            route={route}
-          />
+        />
 
+
+        {/* ===================================================
+            EVACUATION CENTERS / SHELTERS
+            =================================================== */}
+
+        {shelters.map(
+          (shelter) => (
+
+            <Marker
+
+              key={
+                shelter.id
+              }
+
+              position={[
+                shelter.latitude,
+                shelter.longitude,
+              ]}
+
+              eventHandlers={{
+                click: () => {
+
+                  console.log(
+                    'Shelter clicked:',
+                    shelter.name
+                  )
+
+                  console.log(
+                    'Route start:',
+                    hazardLat,
+                    hazardLon
+                  )
+
+                  console.log(
+                    'Route end:',
+                    shelter.latitude,
+                    shelter.longitude
+                  )
+
+                  setSelectedShelter(
+                    shelter
+                  )
+
+                },
+              }}
+
+            >
+
+              <Popup
+                autoPan={true}
+                autoPanPaddingTopLeft={[
+                  40,
+                  100,
+                ]}
+                autoPanPaddingBottomRight={[
+                  40,
+                  40,
+                ]}
+                closeButton={true}
+              >
+
+                <div
+                  className="
+                    min-w-[220px]
+                    font-mono
+                    text-sm
+                  "
+                >
+
+                  {/* ================================
+                      SHELTER NAME
+                      ================================ */}
+
+                  <div
+                    className="
+                      text-base
+                      font-bold
+                      mb-2
+                    "
+                  >
+                    {shelter.name}
+                  </div>
+
+
+                  {/* ================================
+                      BASIC INFORMATION
+                      ================================ */}
+
+                  <div>
+                    Type:{' '}
+                    {shelter.type}
+                  </div>
+
+                  <div>
+                    District:{' '}
+                    {shelter.district}
+                  </div>
+
+                  <div>
+                    Circle:{' '}
+                    {shelter.circle}
+                  </div>
+
+                  <div>
+                    Status:{' '}
+                    {shelter.status}
+                  </div>
+
+
+                  <hr
+                    className="
+                      my-2
+                      border-slate-300
+                    "
+                  />
+
+
+                  {/* ================================
+                      CAPACITY
+                      ================================ */}
+
+                  <div>
+                    Capacity:{' '}
+                    {shelter.capacity}
+                  </div>
+
+                  <div>
+                    Available:{' '}
+                    {shelter.availableCapacity}
+                  </div>
+
+
+                  <hr
+                    className="
+                      my-2
+                      border-slate-300
+                    "
+                  />
+
+
+                  {/* ================================
+                      CENSUS INTELLIGENCE
+                      ================================ */}
+
+                  <div
+                    className="
+                      font-bold
+                      mb-1
+                    "
+                  >
+                    CENSUS INTELLIGENCE
+                  </div>
+
+                  <div>
+                    Evacuation Zone:
+                    {' '}
+                    {shelter.name}
+                  </div>
+
+                  <div>
+                    Population data:
+                    {' '}
+                    Available
+                  </div>
+
+                  <div>
+                    Household data:
+                    {' '}
+                    Available
+                  </div>
+
+                </div>
+
+              </Popup>
+
+            </Marker>
+
+          )
         )}
 
 
-      {/* =================================================
-          ROUTE CALCULATING
-          ================================================= */}
+        {/* ===================================================
+            ROUTE
+            =================================================== */}
+
+        {selectedShelter &&
+          route && (
+
+            <RouteLayer
+              route={route}
+            />
+
+          )
+        }
+
+      </MapContainer>
+
+
+      {/* =====================================================
+          ROUTE LOADING
+          ===================================================== */}
 
       {selectedShelter &&
         loading && (
 
-        <div
-          className="
-            absolute
-            top-3
-            left-1/2
-            -translate-x-1/2
-            z-[900]
-            bg-slate-950/95
-            border
-            border-cyan-500/30
-            text-cyan-300
-            px-4
-            py-2
-            rounded-lg
-            text-[9px]
-            font-mono
-            font-bold
-            shadow-xl
-          "
-        >
-          CALCULATING SHORTEST EVACUATION ROUTE...
-        </div>
+          <div
+            className="
+              absolute
+              top-4
+              right-4
+              z-[1000]
+              rounded-lg
+              border
+              border-cyan-500/30
+              bg-slate-950/90
+              backdrop-blur
+              px-3
+              py-2
+              text-[10px]
+              font-mono
+              text-cyan-300
+              shadow-xl
+            "
+          >
 
-      )}
+            CALCULATING ROUTE...
+
+          </div>
+
+        )
+      }
 
 
-      {/* =================================================
+      {/* =====================================================
           ROUTE ERROR
-          ================================================= */}
+          ===================================================== */}
 
       {selectedShelter &&
         error && (
 
-        <div
-          className="
-            absolute
-            top-3
-            left-1/2
-            -translate-x-1/2
-            z-[900]
-            bg-red-950/95
-            border
-            border-red-500/30
-            text-red-300
-            px-4
-            py-2
-            rounded-lg
-            text-[9px]
-            font-mono
-            font-bold
-            shadow-xl
-            max-w-[350px]
-          "
-        >
-          ROUTE ERROR: {error}
-        </div>
+          <div
+            className="
+              absolute
+              top-4
+              right-4
+              z-[1000]
+              max-w-xs
+              rounded-lg
+              border
+              border-red-500/30
+              bg-red-950/90
+              backdrop-blur
+              px-3
+              py-2
+              text-[10px]
+              font-mono
+              text-red-300
+              shadow-xl
+            "
+          >
 
-      )}
+            ROUTE ERROR:{' '}
 
-    </MapContainer>
+            {error}
+
+          </div>
+
+        )
+      }
+
+    </div>
+
   )
+
 }
 
 

@@ -8,6 +8,7 @@ const settlementRoutes = require('./settlement.routes');
 const authRoutes = require('./auth.routes');
 const riskEngineRoutes = require('./riskEngine.routes');
 const ApiResponse = require('../utils/apiResponse');
+const villageDataRoutes = require('./villageData.routes');
 
 // Health Check
 router.get('/health', (req, res) => {
@@ -27,5 +28,6 @@ router.use('/zones', zoneRoutes);
 router.use('/settlements', settlementRoutes);
 router.use('/auth', authRoutes);
 router.use('/risk', riskEngineRoutes);
+router.use('/village-data', villageDataRoutes);
 
 module.exports = router;
