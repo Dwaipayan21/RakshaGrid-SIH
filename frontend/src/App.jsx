@@ -20,23 +20,46 @@ const drawerTitles = {
 }
 
 const App = () => {
+  // =========================================================
+  // THEME
+  // =========================================================
+
   const [theme, setTheme] = useState(
     () => localStorage.getItem('theme') || 'dark'
   )
 
+  // =========================================================
+  // UI STATE
+  // =========================================================
+
   const [activeDrawer, setActiveDrawer] = useState(null)
-  const [selectedZoneId, setSelectedZoneId] = useState('bhuragaon')
-  const [activeHoveredSite, setActiveHoveredSite] = useState(null)
 
-  // Risk Engine state
-  const [riskApiStatus, setRiskApiStatus] = useState('checking')
-  const [riskAssessment, setRiskAssessment] = useState(null)
-  const [riskLoading, setRiskLoading] = useState(false)
-  const [riskError, setRiskError] = useState(null)
+  const [selectedZoneId, setSelectedZoneId] =
+    useState('bhuragaon')
 
-  // ---------------------------------------------------------
+  const [activeHoveredSite, setActiveHoveredSite] =
+    useState(null)
+
+  // =========================================================
+  // RISK ENGINE STATE
+  // =========================================================
+
+  const [riskApiStatus, setRiskApiStatus] =
+    useState('checking')
+
+  const [riskAssessment, setRiskAssessment] =
+    useState(null)
+
+  const [riskLoading, setRiskLoading] =
+    useState(false)
+
+  const [riskError, setRiskError] =
+    useState(null)
+
+  // =========================================================
   // THEME
-  // ---------------------------------------------------------
+  // =========================================================
+
   useEffect(() => {
     const root = document.documentElement
 
@@ -51,140 +74,208 @@ const App = () => {
     localStorage.setItem('theme', theme)
   }, [theme])
 
-  // ---------------------------------------------------------
+  // =========================================================
   // RISK ENGINE HEALTH CHECK
-  // ---------------------------------------------------------
+  // =========================================================
+
   useEffect(() => {
     checkRiskEngineHealth()
       .then(() => {
-        console.log('RakshaGrid Risk Engine: ONLINE')
+        console.log(
+          'RakshaGrid Risk Engine: ONLINE'
+        )
+
         setRiskApiStatus('online')
       })
       .catch((error) => {
-        console.error('Risk API health check failed:', error)
+        console.error(
+          'Risk API health check failed:',
+          error
+        )
+
         setRiskApiStatus('offline')
       })
   }, [])
 
-  useEffect(() => {
-        checkBackendHealth()
-            .then(data => {
-                console.log("✅ Backend connected:", data);
-            })
-            .catch(error => {
-                console.error("❌ Backend connection failed:", error);
-            });
-    }, []);
-
-  // ---------------------------------------------------------
+  // =========================================================
   // SELECTED ZONE
-  // ---------------------------------------------------------
-  const selectedZone =
-    hazardZones.find((z) => z.id === selectedZoneId) || hazardZones[0]
+  // =========================================================
 
-  // ---------------------------------------------------------
-  // CONVERT FRONTEND ZONE DATA → RISK ENGINE INPUT
-  // ---------------------------------------------------------
+  const selectedZone =
+    hazardZones.find(
+      (z) => z.id === selectedZoneId
+    ) || hazardZones[0]
+
+  // =========================================================
+  // CONVERT FRONTEND ZONE DATA
+  // → RISK ENGINE INPUT
+  // =========================================================
+
   const buildSettlementPayload = (zone) => {
     /*
-     * The current frontend hazardData is prototype/demo data.
+     * Current hazardData contains prototype/demo values.
      *
-     * We map the available zone information into the settlement
+     * These values are mapped into the settlement
      * schema expected by the Risk Engine.
      *
-     * These values will later be replaced by actual government
-     * / telemetry / GIS-derived indicators.
+     * Later these fields can be replaced with
+     * authoritative government / GIS / telemetry data.
      */
 
-    const population = Number(zone.population || 0)
+    const population =
+      Number(zone.population || 0)
 
-    const vulnerablePopulation = Number(zone.vulnerablePopulation || 0)
+    const vulnerablePopulation =
+      Number(
+        zone.vulnerablePopulation || 0
+      )
 
     const vulnerabilityScore =
       population > 0
-        ? Math.min(100, (vulnerablePopulation / population) * 100)
+        ? Math.min(
+            100,
+            (vulnerablePopulation /
+              population) *
+              100
+          )
         : 50
 
-    // Current prototype flood indicators
-    const hazardImpact = zone.hazardImpact || {}
+    // =======================================================
+    // FLOOD INDICATORS
+    // =======================================================
+
+    const hazardImpact =
+      zone.hazardImpact || {}
 
     const rainfall =
-      Number(hazardImpact.rainfall?.value) ||
+      Number(
+        hazardImpact.rainfall?.value
+      ) ||
       Number(zone.rainfall_mm) ||
       180
 
     const riverLevel =
-      Number(hazardImpact.riverLevel?.value) ||
+      Number(
+        hazardImpact.riverLevel?.value
+      ) ||
       Number(zone.river_level_m) ||
       8.2
 
     const dangerLevel =
-      Number(hazardImpact.dangerLevel?.value) ||
+      Number(
+        hazardImpact.dangerLevel?.value
+      ) ||
       Number(zone.danger_level_m) ||
       7.5
 
     const inundationDepth =
-      Number(hazardImpact.inundationDepth?.value) ||
+      Number(
+        hazardImpact.inundationDepth?.value
+      ) ||
       Number(zone.inundation_depth_m) ||
       1.4
 
     const historicalFrequency =
-      Number(hazardImpact.floodFrequency?.value) / 100 ||
-      Number(zone.historical_flood_frequency) ||
+      Number(
+        hazardImpact.floodFrequency?.value
+      ) /
+        100 ||
+      Number(
+        zone.historical_flood_frequency
+      ) ||
       0.75
 
+    // =======================================================
+    // SETTLEMENT PAYLOAD
+    // =======================================================
+
     return {
-      settlement_id: `ASSAM-MORIGAON-${String(zone.id).toUpperCase()}`,
-      settlement_name: zone.name || 'Unknown Settlement',
+      settlement_id:
+        `ASSAM-MORIGAON-${String(
+          zone.id
+        ).toUpperCase()}`,
+
+      settlement_name:
+        zone.name ||
+        'Unknown Settlement',
 
       state: 'Assam',
-      district: zone.district || 'Morigaon',
+
+      district:
+        zone.district ||
+        'Morigaon',
 
       hazard_type: 'flood',
 
-      latitude: Number(zone.lat || 26.25),
-      longitude: Number(zone.lon || 92.34),
+      latitude:
+        Number(zone.lat || 26.25),
+
+      longitude:
+        Number(zone.lon || 92.34),
 
       population,
+
       households: Number(
-        zone.households || Math.ceil(population / 5)
+        zone.households ||
+          Math.ceil(
+            population / 5
+          )
       ),
 
-      population_density: Number(
-        zone.populationDensity || 1000
-      ),
+      population_density:
+        Number(
+          zone.populationDensity ||
+            1000
+        ),
 
-      vulnerability_score: vulnerabilityScore,
+      vulnerability_score:
+        vulnerabilityScore,
 
-      travel_time_minutes: Number(
-        zone.travel_time_minutes || 35
-      ),
+      travel_time_minutes:
+        Number(
+          zone.travel_time_minutes ||
+            35
+        ),
 
-      road_accessibility: Number(
-        zone.road_accessibility || 0.4
-      ),
+      road_accessibility:
+        Number(
+          zone.road_accessibility ||
+            0.4
+        ),
 
-      shelter_capacity: Number(
-        zone.shelter_capacity ||
-          zone.nearbySites?.reduce(
-            (total, site) => total + Number(site.available || 0),
-            0
-          ) ||
-          1200
-      ),
+      shelter_capacity:
+        Number(
+          zone.shelter_capacity ||
+            zone.nearbySites?.reduce(
+              (total, site) =>
+                total +
+                Number(
+                  site.available || 0
+                ),
+              0
+            ) ||
+            1200
+        ),
 
       // Flood-specific indicators
       rainfall_mm: rainfall,
+
       river_level_m: riverLevel,
+
       danger_level_m: dangerLevel,
-      inundation_depth_m: inundationDepth,
-      historical_flood_frequency: historicalFrequency,
+
+      inundation_depth_m:
+        inundationDepth,
+
+      historical_flood_frequency:
+        historicalFrequency,
     }
   }
 
-  // ---------------------------------------------------------
+  // =========================================================
   // RUN RISK ASSESSMENT
-  // ---------------------------------------------------------
+  // =========================================================
+
   const runRiskAssessment = async (zone) => {
     if (!zone) return
 
@@ -192,123 +283,378 @@ const App = () => {
     setRiskError(null)
 
     try {
-      const settlementPayload = buildSettlementPayload(zone)
+      const settlementPayload =
+        buildSettlementPayload(zone)
 
       console.log(
         'Sending settlement to RakshaGrid Risk Engine:',
         settlementPayload
       )
 
-      const response = await assessSettlementRisk(settlementPayload)
+      const response =
+        await assessSettlementRisk(
+          settlementPayload
+        )
 
-      console.log('Risk Engine response:', response)
+      console.log(
+        'Risk Engine response:',
+        response
+      )
 
       setRiskAssessment(response)
     } catch (error) {
-      console.error('Risk assessment failed:', error)
-      setRiskError(error.message || 'Risk assessment failed')
+      console.error(
+        'Risk assessment failed:',
+        error
+      )
+
+      setRiskError(
+        error.message ||
+          'Risk assessment failed'
+      )
     } finally {
       setRiskLoading(false)
     }
   }
 
-  // ---------------------------------------------------------
-  // RUN RISK ASSESSMENT WHEN ZONE CHANGES
-  // ---------------------------------------------------------
-  useEffect(() => {
-    if (selectedZone && riskApiStatus === 'online') {
-      runRiskAssessment(selectedZone)
-    }
-  }, [selectedZoneId, riskApiStatus])
+  // =========================================================
+  // RUN ASSESSMENT WHEN ZONE CHANGES
+  // =========================================================
 
-  // ---------------------------------------------------------
+  useEffect(() => {
+    if (
+      selectedZone &&
+      riskApiStatus === 'online'
+    ) {
+      runRiskAssessment(
+        selectedZone
+      )
+    }
+  }, [
+    selectedZoneId,
+    riskApiStatus,
+  ])
+
+  // =========================================================
   // THEME TOGGLE
-  // ---------------------------------------------------------
+  // =========================================================
+
   const toggleTheme = () => {
     setTheme((prev) =>
-      prev === 'light' ? 'dark' : 'light'
+      prev === 'light'
+        ? 'dark'
+        : 'light'
     )
   }
 
-  // ---------------------------------------------------------
+  // =========================================================
   // ZONE SELECTION
-  // ---------------------------------------------------------
+  // =========================================================
+
   const handleSelectZone = (zone) => {
     if (zone && zone.id) {
       setSelectedZoneId(zone.id)
     }
   }
 
-  // ---------------------------------------------------------
-  // CONSOLE STATUS
-  // ---------------------------------------------------------
-  console.log('Risk API status:', riskApiStatus)
+  // =========================================================
+  // DASHBOARD METRICS
+  // =========================================================
 
-  if (riskAssessment) {
-    console.log('Current risk assessment:', riskAssessment)
-  }
+  const p1Count =
+    hazardZones.filter(
+      (zone) =>
+        Number(
+          zone.compositeRiskScore || 0
+        ) >= 0.75
+    ).length
 
-  if (riskError) {
-    console.warn('Risk assessment error:', riskError)
-  }
+  const p2Count =
+    hazardZones.filter((zone) => {
+      const score =
+        Number(
+          zone.compositeRiskScore || 0
+        )
 
-  // ---------------------------------------------------------
+      return (
+        score >= 0.5 &&
+        score < 0.75
+      )
+    }).length
+
+  const totalPopulation =
+    hazardZones.reduce(
+      (sum, zone) =>
+        sum +
+        Number(
+          zone.population || 0
+        ),
+      0
+    )
+
+  const totalVulnerable =
+    hazardZones.reduce(
+      (sum, zone) =>
+        sum +
+        Number(
+          zone.vulnerablePopulation ||
+            0
+        ),
+      0
+    )
+
+  const selectedRisk =
+    Math.round(
+      Number(
+        selectedZone?.compositeRiskScore ||
+          0
+      ) * 100
+    )
+
+  // =========================================================
   // UI
-  // ---------------------------------------------------------
+  // =========================================================
+
   return (
     <main className="h-screen w-full flex flex-col overflow-hidden bg-tactical-base text-slate-100 font-sans transition-colors duration-300">
+
+      {/* =====================================================
+          HEADER
+          ===================================================== */}
 
       <TopNav
         theme={theme}
         onToggleTheme={toggleTheme}
       />
 
-      <div className="flex-1 flex overflow-hidden p-4 gap-4 relative">
+      {/* =====================================================
+          MAIN COMMAND AREA
+          ===================================================== */}
 
-        <TacticalMapSection
-          hazardZones={hazardZones}
-          selectedZone={selectedZone}
-          onSelectZone={handleSelectZone}
-          activeHoveredSite={activeHoveredSite}
-        />
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
 
-      <HazardDetailPanel
-        zone={selectedZone}
-        riskAssessment={riskAssessment}
-        riskLoading={riskLoading}
-        riskError={riskError}
-        onOpenDrawer={setActiveDrawer}
-        activeHoveredSite={activeHoveredSite}
-        setActiveHoveredSite={setActiveHoveredSite}
-      />
+        {/* ===================================================
+            MAP + HAZARD DETAIL
+            =================================================== */}
+
+        <div className="flex-1 flex overflow-hidden p-3 pb-2 gap-3 min-h-0">
+
+          {/* TACTICAL MAP */}
+
+          <TacticalMapSection
+            hazardZones={hazardZones}
+            selectedZone={selectedZone}
+            onSelectZone={
+              handleSelectZone
+            }
+            activeHoveredSite={
+              activeHoveredSite
+            }
+          />
+
+          {/* HAZARD DETAIL */}
+
+          <HazardDetailPanel
+            zone={selectedZone}
+            riskAssessment={
+              riskAssessment
+            }
+            riskLoading={
+              riskLoading
+            }
+            riskError={
+              riskError
+            }
+            onOpenDrawer={
+              setActiveDrawer
+            }
+            activeHoveredSite={
+              activeHoveredSite
+            }
+            setActiveHoveredSite={
+              setActiveHoveredSite
+            }
+          />
+
+        </div>
+
+        {/* ===================================================
+            COMPACT RISK SUMMARY
+            =================================================== */}
+
+        <div className="mx-3 mb-2 h-12 flex-shrink-0 rounded-xl border border-tactical-border bg-tactical-surface">
+
+          <div className="h-full flex items-center px-4">
+
+            {/* P1 */}
+
+            <div className="flex items-center gap-2 pr-6">
+
+              <span className="text-[9px] font-mono text-slate-500 uppercase">
+                P1
+              </span>
+
+              <span className="text-sm font-bold font-mono text-red-400">
+                {p1Count}
+              </span>
+
+            </div>
+
+            {/* P2 */}
+
+            <div className="flex items-center gap-2 pr-6">
+
+              <span className="text-[9px] font-mono text-slate-500 uppercase">
+                P2
+              </span>
+
+              <span className="text-sm font-bold font-mono text-amber-400">
+                {p2Count}
+              </span>
+
+            </div>
+
+            {/* DIVIDER */}
+
+            <div className="h-5 w-px bg-tactical-border mr-6" />
+
+            {/* POPULATION */}
+
+            <div className="flex items-center gap-2 pr-6">
+
+              <span className="text-[9px] font-mono text-slate-500 uppercase">
+                POP
+              </span>
+
+              <span className="text-sm font-bold font-mono text-slate-200">
+                {totalPopulation.toLocaleString()}
+              </span>
+
+            </div>
+
+            {/* VULNERABLE */}
+
+            <div className="flex items-center gap-2 pr-6">
+
+              <span className="text-[9px] font-mono text-slate-500 uppercase">
+                VULNERABLE
+              </span>
+
+              <span className="text-sm font-bold font-mono text-red-300">
+                {totalVulnerable.toLocaleString()}
+              </span>
+
+            </div>
+
+            {/* DIVIDER */}
+
+            <div className="h-5 w-px bg-tactical-border mr-6" />
+
+            {/* SELECTED RISK */}
+
+            <div className="flex items-center gap-2">
+
+              <span className="text-[9px] font-mono text-slate-500 uppercase">
+                SELECTED RISK
+              </span>
+
+              <span className="text-sm font-bold font-mono text-red-400">
+                {selectedRisk}%
+              </span>
+
+            </div>
+
+            {/* RISK ENGINE STATUS */}
+
+            <div className="ml-auto flex items-center gap-2">
+
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  riskApiStatus ===
+                  'online'
+                    ? 'bg-emerald-400'
+                    : riskApiStatus ===
+                      'checking'
+                    ? 'bg-amber-400'
+                    : 'bg-red-400'
+                }`}
+              />
+
+              <span
+                className={`text-[9px] font-mono font-bold uppercase ${
+                  riskApiStatus ===
+                  'online'
+                    ? 'text-emerald-400'
+                    : riskApiStatus ===
+                      'checking'
+                    ? 'text-amber-400'
+                    : 'text-red-400'
+                }`}
+              >
+                {riskApiStatus ===
+                'online'
+                  ? 'RISK ENGINE CONNECTED'
+                  : riskApiStatus ===
+                    'checking'
+                  ? 'RISK ENGINE CHECKING'
+                  : 'RISK ENGINE OFFLINE'}
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
 
       </div>
 
+      {/* =====================================================
+          ACTION BAR
+          ===================================================== */}
+
       <ActionBar
         onSendAlert={() =>
-          console.log('TODO: wire to alerts API')
+          console.log(
+            'TODO: wire to alerts API'
+          )
         }
         onAuthorizeDispatch={() =>
-          console.log('TODO: wire to dispatch API')
+          console.log(
+            'TODO: wire to dispatch API'
+          )
         }
       />
 
+      {/* =====================================================
+          DRAWER
+          ===================================================== */}
+
       <Drawer
         activeKey={activeDrawer}
-        onClose={() => setActiveDrawer(null)}
+        onClose={() =>
+          setActiveDrawer(null)
+        }
         title={
           activeDrawer
-            ? drawerTitles[activeDrawer]
+            ? drawerTitles[
+                activeDrawer
+              ]
             : ''
         }
       >
+
         <div className="space-y-3">
 
+          {/* Description */}
+
           <p className="text-sm text-slate-400">
-            Content for the "{activeDrawer}" panel goes here.
+            Content for the "
+            {activeDrawer}" panel
+            goes here.
           </p>
 
           {/* Risk Engine Status */}
+
           <div className="rounded-lg border border-slate-700 p-3">
 
             <div className="text-xs uppercase tracking-wide text-slate-500">
@@ -316,55 +662,84 @@ const App = () => {
             </div>
 
             <div className="mt-1 text-sm">
-              {riskApiStatus === 'online'
+
+              {riskApiStatus ===
+              'online'
                 ? 'ONLINE'
-                : riskApiStatus === 'checking'
+                : riskApiStatus ===
+                  'checking'
                 ? 'CHECKING'
                 : 'OFFLINE'}
+
             </div>
 
           </div>
 
-          {/* Current Assessment */}
+          {/* Risk Loading */}
+
           {riskLoading && (
             <div className="text-sm text-amber-400">
               Running risk assessment...
             </div>
           )}
 
+          {/* Risk Error */}
+
           {riskError && (
             <div className="text-sm text-red-400">
-              Risk assessment error: {riskError}
+              Risk assessment error:{' '}
+              {riskError}
             </div>
           )}
+
+          {/* Current Assessment */}
 
           {riskAssessment?.result && (
             <div className="rounded-lg border border-slate-700 p-3 space-y-2">
 
               <div className="text-xs uppercase tracking-wide text-slate-500">
-                Live Risk Assessment
+                Current Risk Assessment
               </div>
 
               <div className="text-lg font-bold">
-                {riskAssessment.result.risk_score}
+                {
+                  riskAssessment
+                    .result
+                    .risk_score
+                }
               </div>
 
               <div className="text-sm">
+
                 Priority:{' '}
+
                 <span className="font-semibold">
-                  {riskAssessment.result.priority}
+                  {
+                    riskAssessment
+                      .result
+                      .priority
+                  }
                 </span>
+
               </div>
 
               <div className="text-xs text-slate-400">
+
                 Hazard:{' '}
-                {riskAssessment.result.hazard_type}
+
+                {
+                  riskAssessment
+                    .result
+                    .hazard_type
+                }
+
               </div>
 
             </div>
           )}
 
         </div>
+
       </Drawer>
 
     </main>
