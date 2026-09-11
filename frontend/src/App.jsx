@@ -9,6 +9,7 @@ import {
   checkRiskEngineHealth,
   assessSettlementRisk,
 } from './services/riskApi'
+import { checkBackendHealth } from './services/healthApi'
 
 const drawerTitles = {
   topo: 'Corridor Topography & Surge Clearance',

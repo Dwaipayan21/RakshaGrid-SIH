@@ -4,6 +4,12 @@ const http = require('http');
 const app = require('./app');
 const prisma = require('./config/db');
 const logger = require('./utils/logger');
+const cors = require("cors");
+
+//connect with frontend
+app.use(cors({
+  origin: "http://localhost:5173/"
+}))
 
 const PORT = process.env.PORT || 5000;
 
