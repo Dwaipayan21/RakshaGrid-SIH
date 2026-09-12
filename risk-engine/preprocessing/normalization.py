@@ -4,30 +4,109 @@ RakshaGrid Normalization Layer
 Converts raw disaster-related measurements into a
 common 0-100 risk-factor scale.
 
-IMPORTANT:
-The thresholds in this file are PROTOTYPE thresholds.
+Design principles:
+    - Higher returned value = higher risk.
+    - All normalized values are bounded to 0-100.
+    - Invalid numeric values are rejected explicitly.
+    - Existing RakshaGrid factor architecture is preserved.
 
-They are intended for development and demonstration.
-They must eventually be calibrated using historical,
-official, hazard-specific datasets.
+Current calibration:
+    The numerical reference ranges are prototype ranges.
+    They should be calibrated further against authoritative,
+    historical Assam hazard and impact datasets.
 
-Direction:
-    Higher returned value = higher risk.
+Risk factors:
+    H = Hazard
+    E = Exposure
+    V = Vulnerability
+    A = Accessibility
+    C = Capacity
 """
 
 
-# ---------------------------------------------------------
-# Generic utilities
-# ---------------------------------------------------------
+import math
 
-def clamp(value: float, minimum: float = 0, maximum: float = 100) -> float:
+
+# =========================================================
+# Generic validation utilities
+# =========================================================
+
+def _validate_numeric(
+    value: float,
+    field_name: str,
+) -> float:
+    """
+    Validate that a value is numeric and finite.
+
+    NaN and infinite values are rejected because allowing
+    them into a weighted risk calculation can silently
+    corrupt the final score.
+    """
+
+    if isinstance(value, bool):
+
+        raise ValueError(
+            f"{field_name} must be numeric."
+        )
+
+    try:
+
+        numeric_value = float(value)
+
+    except (
+        TypeError,
+        ValueError,
+    ):
+
+        raise ValueError(
+            f"{field_name} must be numeric."
+        )
+
+    if not math.isfinite(
+        numeric_value
+    ):
+
+        raise ValueError(
+            f"{field_name} must be finite."
+        )
+
+    return numeric_value
+
+
+def clamp(
+    value: float,
+    minimum: float = 0,
+    maximum: float = 100,
+) -> float:
     """
     Keep a value within a specified range.
     """
 
+    value = _validate_numeric(
+        value,
+        "value",
+    )
+
+    minimum = _validate_numeric(
+        minimum,
+        "minimum",
+    )
+
+    maximum = _validate_numeric(
+        maximum,
+        "maximum",
+    )
+
+    if maximum < minimum:
+
+        raise ValueError(
+            "'maximum' must be greater than or equal "
+            "to 'minimum'."
+        )
+
     return max(
         minimum,
-        min(maximum, value)
+        min(maximum, value),
     )
 
 
@@ -43,7 +122,23 @@ def linear_scale(
     Values above 'high' become 100.
     """
 
+    value = _validate_numeric(
+        value,
+        "value",
+    )
+
+    low = _validate_numeric(
+        low,
+        "low",
+    )
+
+    high = _validate_numeric(
+        high,
+        "high",
+    )
+
     if high <= low:
+
         raise ValueError(
             "'high' must be greater than 'low'."
         )
@@ -70,7 +165,23 @@ def inverse_linear_scale(
         More shelter capacity -> lower capacity risk.
     """
 
+    value = _validate_numeric(
+        value,
+        "value",
+    )
+
+    low = _validate_numeric(
+        low,
+        "low",
+    )
+
+    high = _validate_numeric(
+        high,
+        "high",
+    )
+
     if high <= low:
+
         raise ValueError(
             "'high' must be greater than 'low'."
         )
@@ -83,24 +194,30 @@ def inverse_linear_scale(
     return clamp(score)
 
 
-# ---------------------------------------------------------
+# =========================================================
 # Flood normalization
-# ---------------------------------------------------------
+# =========================================================
 
 def normalize_rainfall(
     rainfall_mm: float,
 ) -> float:
     """
-    Prototype rainfall hazard score.
+    Convert rainfall into flood-risk score.
 
-    0 mm       -> approximately 0
-    150+ mm    -> 100
+    Prototype calibration:
+        0 mm       -> 0
+        150+ mm    -> 100
 
-    These thresholds must eventually be calibrated
-    using historical rainfall-impact relationships.
+    Higher rainfall produces higher flood hazard risk.
     """
 
+    rainfall_mm = _validate_numeric(
+        rainfall_mm,
+        "Rainfall",
+    )
+
     if rainfall_mm < 0:
+
         raise ValueError(
             "Rainfall cannot be negative."
         )
@@ -117,21 +234,40 @@ def normalize_river_level(
     danger_level: float,
 ) -> float:
     """
-    Convert river level relative to danger level
-    into a 0-100 risk score.
+    Convert river level relative to the supplied
+    danger level into a 0-100 flood-risk score.
 
-    Below danger level -> lower score.
-    At danger level    -> 100.
+    The danger level is treated as the operational
+    reference supplied for that river/location.
 
-    This is a simplified prototype relationship.
+    Therefore:
+        level <= 0            -> 0
+        level == danger level -> 100
+        level > danger level  -> 100
+
+    Values above the danger level remain maximum risk
+    because the factor is already saturated at the
+    defined danger threshold.
     """
 
+    level = _validate_numeric(
+        level,
+        "River level",
+    )
+
+    danger_level = _validate_numeric(
+        danger_level,
+        "Danger level",
+    )
+
     if danger_level <= 0:
+
         raise ValueError(
             "Danger level must be positive."
         )
 
     if level < 0:
+
         raise ValueError(
             "River level cannot be negative."
         )
@@ -149,11 +285,18 @@ def normalize_inundation_depth(
     """
     Convert flood inundation depth into a 0-100 score.
 
-    0 m     -> 0
-    2 m+    -> 100
+    Prototype calibration:
+        0 m     -> 0
+        2 m+    -> 100
     """
 
+    depth_m = _validate_numeric(
+        depth_m,
+        "Inundation depth",
+    )
+
     if depth_m < 0:
+
         raise ValueError(
             "Inundation depth cannot be negative."
         )
@@ -165,9 +308,51 @@ def normalize_inundation_depth(
     )
 
 
-# ---------------------------------------------------------
+def normalize_historical_flood_frequency(
+    frequency_score: float,
+) -> float:
+    """
+    Normalize historical flood frequency.
+
+    The current Risk Engine expects the historical
+    frequency feature to be supplied as a 0-100
+    normalized historical-risk score.
+
+    This function deliberately does NOT assume that
+    an integer such as '8' means eight flood events.
+    Event counts and risk scores are different quantities
+    and must not be silently conflated.
+
+    Future calibration can replace this with a
+    location-specific frequency-to-risk transformation
+    once authoritative historical village-level event
+    counts are available.
+    """
+
+    frequency_score = _validate_numeric(
+        frequency_score,
+        "Historical flood frequency",
+    )
+
+    if frequency_score < 0:
+
+        raise ValueError(
+            "Historical flood frequency cannot be negative."
+        )
+
+    if frequency_score > 100:
+
+        raise ValueError(
+            "Historical flood frequency score "
+            "must be between 0 and 100."
+        )
+
+    return frequency_score
+
+
+# =========================================================
 # Exposure normalization
-# ---------------------------------------------------------
+# =========================================================
 
 def normalize_population_density(
     population_density: float,
@@ -175,14 +360,22 @@ def normalize_population_density(
     high_density: float = 2000,
 ) -> float:
     """
-    Convert population density into an exposure score.
+    Convert population density into exposure risk.
 
     Higher population density -> higher exposure.
 
-    Thresholds are prototype values.
+    Current reference range:
+        100 persons/km² -> 0
+        2000+ persons/km² -> 100
     """
 
+    population_density = _validate_numeric(
+        population_density,
+        "Population density",
+    )
+
     if population_density < 0:
+
         raise ValueError(
             "Population density cannot be negative."
         )
@@ -199,15 +392,33 @@ def normalize_population(
     reference_population: int = 5000,
 ) -> float:
     """
-    Convert exposed population into a 0-100 score.
+    Convert exposed population into exposure risk.
 
-    Prototype reference:
-        5,000+ people -> 100
+    Current reference:
+        0 people       -> 0
+        5000+ people   -> 100
     """
 
+    population = _validate_numeric(
+        population,
+        "Population",
+    )
+
+    reference_population = _validate_numeric(
+        reference_population,
+        "Reference population",
+    )
+
     if population < 0:
+
         raise ValueError(
             "Population cannot be negative."
+        )
+
+    if reference_population <= 0:
+
+        raise ValueError(
+            "Reference population must be positive."
         )
 
     return linear_scale(
@@ -217,9 +428,9 @@ def normalize_population(
     )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # Vulnerability normalization
-# ---------------------------------------------------------
+# =========================================================
 
 def normalize_vulnerability(
     vulnerability: float,
@@ -227,32 +438,43 @@ def normalize_vulnerability(
     """
     Normalize an already-computed vulnerability value.
 
-    Expected input:
-        0-1 OR 0-100.
+    Accepted input:
+        0-1
+        OR
+        0-100
 
     Returns:
-        0-100.
+        0-100
     """
 
+    vulnerability = _validate_numeric(
+        vulnerability,
+        "Vulnerability",
+    )
+
     if vulnerability < 0:
+
         raise ValueError(
             "Vulnerability cannot be negative."
         )
 
     if vulnerability <= 1:
+
         vulnerability *= 100
 
     if vulnerability > 100:
+
         raise ValueError(
-            "Vulnerability must be between 0 and 1 or 0 and 100."
+            "Vulnerability must be between "
+            "0 and 1 or 0 and 100."
         )
 
     return vulnerability
 
 
-# ---------------------------------------------------------
+# =========================================================
 # Accessibility normalization
-# ---------------------------------------------------------
+# =========================================================
 
 def normalize_travel_time(
     travel_time_minutes: float,
@@ -262,12 +484,18 @@ def normalize_travel_time(
 
     Longer travel time -> higher risk.
 
-    Prototype:
-        0 minutes  -> 0
-        120+ min   -> 100
+    Prototype reference:
+        0 minutes   -> 0
+        120+ min    -> 100
     """
 
+    travel_time_minutes = _validate_numeric(
+        travel_time_minutes,
+        "Travel time",
+    )
+
     if travel_time_minutes < 0:
+
         raise ValueError(
             "Travel time cannot be negative."
         )
@@ -286,24 +514,31 @@ def normalize_road_accessibility(
     Convert a 0-100 road accessibility score into
     accessibility RISK.
 
-    Important:
-        This function reverses the direction.
-
     High road accessibility = low risk.
     Low road accessibility = high risk.
     """
 
-    if accessibility_score < 0 or accessibility_score > 100:
+    accessibility_score = _validate_numeric(
+        accessibility_score,
+        "Road accessibility",
+    )
+
+    if (
+        accessibility_score < 0
+        or accessibility_score > 100
+    ):
+
         raise ValueError(
-            "Accessibility score must be between 0 and 100."
+            "Accessibility score must be "
+            "between 0 and 100."
         )
 
     return 100 - accessibility_score
 
 
-# ---------------------------------------------------------
+# =========================================================
 # Shelter / response capacity normalization
-# ---------------------------------------------------------
+# =========================================================
 
 def normalize_shelter_capacity(
     available_capacity: int,
@@ -318,16 +553,28 @@ def normalize_shelter_capacity(
     Less available shelter capacity
         -> higher risk.
 
-    Formula is based on the proportion of exposed
+    The score is based on the proportion of exposed
     population that can currently be accommodated.
     """
 
+    available_capacity = _validate_numeric(
+        available_capacity,
+        "Available shelter capacity",
+    )
+
+    exposed_population = _validate_numeric(
+        exposed_population,
+        "Exposed population",
+    )
+
     if available_capacity < 0:
+
         raise ValueError(
             "Available capacity cannot be negative."
         )
 
     if exposed_population <= 0:
+
         return 0.0
 
     coverage_ratio = (
@@ -335,12 +582,14 @@ def normalize_shelter_capacity(
         / exposed_population
     )
 
-    # 100% coverage or more = 0 risk
+    # Full coverage or surplus capacity.
     if coverage_ratio >= 1:
+
         return 0.0
 
-    # No available capacity = maximum risk
+    # No available capacity.
     if coverage_ratio <= 0:
+
         return 100.0
 
     return clamp(
@@ -348,9 +597,9 @@ def normalize_shelter_capacity(
     )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # Composite factor helpers
-# ---------------------------------------------------------
+# =========================================================
 
 def calculate_flood_hazard_score(
     rainfall_score: float,
@@ -359,14 +608,18 @@ def calculate_flood_hazard_score(
     historical_frequency_score: float,
 ) -> float:
     """
-    Combine flood-specific indicators into
-    one 0-100 hazard score.
+    Combine flood-specific indicators into one
+    0-100 hazard score.
 
-    Prototype weights:
+    Current weights:
         Rainfall              25%
         River level           35%
         Inundation            30%
         Historical frequency  10%
+
+    These weights are intentionally preserved so that
+    the existing Risk Engine remains compatible with
+    the current architecture and tests.
     """
 
     values = [
@@ -378,9 +631,16 @@ def calculate_flood_hazard_score(
 
     for value in values:
 
+        value = _validate_numeric(
+            value,
+            "Flood score",
+        )
+
         if value < 0 or value > 100:
+
             raise ValueError(
-                "All flood scores must be between 0 and 100."
+                "All flood scores must be "
+                "between 0 and 100."
             )
 
     score = (
@@ -399,6 +659,9 @@ def calculate_exposure_score(
 ) -> float:
     """
     Combine population-related exposure indicators.
+
+    Population contribution = 60%
+    Density contribution    = 40%
     """
 
     for value in [
@@ -406,9 +669,16 @@ def calculate_exposure_score(
         density_score,
     ]:
 
+        value = _validate_numeric(
+            value,
+            "Exposure score",
+        )
+
         if value < 0 or value > 100:
+
             raise ValueError(
-                "Exposure scores must be between 0 and 100."
+                "Exposure scores must be "
+                "between 0 and 100."
             )
 
     return clamp(
@@ -423,6 +693,9 @@ def calculate_accessibility_score(
 ) -> float:
     """
     Combine accessibility risk indicators.
+
+    Travel-time contribution = 60%
+    Road-risk contribution  = 40%
     """
 
     for value in [
@@ -430,9 +703,16 @@ def calculate_accessibility_score(
         road_risk_score,
     ]:
 
+        value = _validate_numeric(
+            value,
+            "Accessibility score",
+        )
+
         if value < 0 or value > 100:
+
             raise ValueError(
-                "Accessibility scores must be between 0 and 100."
+                "Accessibility scores must be "
+                "between 0 and 100."
             )
 
     return clamp(

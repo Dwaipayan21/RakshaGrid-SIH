@@ -1,0 +1,15 @@
+﻿{
+  "source": "Assam Census village master",
+  "dataset": "data/processed/village_master_enriched.csv",
+  "village_count": 3754,
+  "population": {
+    "minimum": 0,
+    "p25": 557,
+    "p50": 1171,
+    "p75": 2155,
+    "p90": 3439,
+    "p95": 4525,
+    "p99": 6690,
+    "maximum": 30994
+  }
+}
