@@ -24,6 +24,8 @@ import RouteLayer from './RouteLayer'
 
 import shelters from '../../data/shelters'
 
+import Recenter from './Recenter'
+
 
 const Map = ({
   hazardZones,
@@ -130,6 +132,46 @@ const Map = ({
 
 
   // =========================================================
+  // RECENTER TARGETS
+  // =========================================================
+
+  const hazardLoc = useMemo(() => {
+
+    if (
+      hazardLat == null ||
+      hazardLon == null
+    ) {
+      return null
+    }
+
+    return {
+      lat: hazardLat,
+      lon: hazardLon,
+    }
+
+  }, [
+    hazardLat,
+    hazardLon,
+  ])
+
+
+  const shelterLoc = useMemo(() => {
+
+    if (!selectedShelter) {
+      return null
+    }
+
+    return {
+      lat: selectedShelter.latitude,
+      lon: selectedShelter.longitude,
+    }
+
+  }, [
+    selectedShelter,
+  ])
+
+
+  // =========================================================
   // MAP CENTER
   // =========================================================
 
@@ -229,6 +271,26 @@ const Map = ({
 
         <ZoomControl
           position="bottomright"
+        />
+
+
+        {/* ===================================================
+            RECENTER ON HAZARD ZONE SELECTION
+            =================================================== */}
+
+        <Recenter
+          loc={hazardLoc}
+          zoom={14}
+        />
+
+
+        {/* ===================================================
+            RECENTER ON SHELTER / SAFE ZONE SELECTION
+            =================================================== */}
+
+        <Recenter
+          loc={shelterLoc}
+          zoom={15}
         />
 
 
