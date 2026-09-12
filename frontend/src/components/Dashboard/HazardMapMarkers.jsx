@@ -14,23 +14,45 @@ import L from 'leaflet'
 // HAZARD ICON
 // =========================================================
 
-const hazardIcon = L.divIcon({
-  className: 'hazard-marker',
+const getHazardColor = (riskScore) => {
+  if (riskScore > 0.8) {
+    return {
+      fill: '#ef4444',
+      glow: 'rgba(239,68,68,.8)',
+    }
+  }
 
-  html: `
-    <div style="
-      width:16px;
-      height:16px;
-      border-radius:50%;
-      background:#ef4444;
-      border:3px solid rgba(255,255,255,.9);
-      box-shadow:0 0 18px rgba(239,68,68,.8);
-    "></div>
-  `,
+  if (riskScore >= 0.5) {
+    return {
+      fill: '#f59e0b',
+      glow: 'rgba(245,158,11,.8)',
+    }
+  }
 
-  iconSize: [16, 16],
-  iconAnchor: [8, 8],
-})
+  return {
+    fill: '#22c55e',
+    glow: 'rgba(34,197,94,.8)',
+  }
+}
+
+const createHazardIcon = ({ fill, glow }) =>
+  L.divIcon({
+    className: 'hazard-marker',
+
+    html: `
+      <div style="
+        width:16px;
+        height:16px;
+        border-radius:50%;
+        background:${fill};
+        border:3px solid rgba(255,255,255,.9);
+        box-shadow:0 0 18px ${glow};
+      "></div>
+    `,
+
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+  })
 
 
 // =========================================================
@@ -135,6 +157,10 @@ export default function HazardMapMarkers({
     selectedZone?.longitude ??
     selectedZone?.lon
 
+  const selectedHazardColor = getHazardColor(
+    Number(selectedZone?.compositeRiskScore ?? 0)
+  )
+
 
   return (
     <>
@@ -211,9 +237,10 @@ export default function HazardMapMarkers({
             ]}
             radius={1800}
             pathOptions={{
-              color: '#ef4444',
+              color: selectedHazardColor.fill,
               weight: 2.5,
-              fillColor: '#ef4444',
+              dashArray: '8 8',
+              fillColor: selectedHazardColor.fill,
               fillOpacity: 0.12,
             }}
           />
@@ -530,8 +557,8 @@ export default function HazardMapMarkers({
       {/* =================================================
           SELECTED HAZARD MARKER
 
-          This preserves a distinct red hazard marker
-          for the currently selected settlement/zone.
+          This preserves a distinct severity-colored hazard
+          marker for the currently selected settlement/zone.
           ================================================= */}
 
       {showRiskZones &&
@@ -544,7 +571,7 @@ export default function HazardMapMarkers({
               selectedLat,
               selectedLon,
             ]}
-            icon={hazardIcon}
+            icon={createHazardIcon(selectedHazardColor)}
             zIndexOffset={1000}
           >
 
