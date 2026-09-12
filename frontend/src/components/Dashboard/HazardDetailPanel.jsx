@@ -386,7 +386,7 @@ const priorityAction = isCritical
               border: 'border-amber-500/30',
             },
             Laharighat: {
-              label: 'P3 Monitor',
+              label: 'P4 Monitor',
               color: 'text-emerald-400',
               border: 'border-emerald-500/30',
             },

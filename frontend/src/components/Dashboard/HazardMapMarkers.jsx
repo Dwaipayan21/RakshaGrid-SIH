@@ -1,4 +1,5 @@
 import React from 'react'
+
 import {
   Marker,
   Popup,
@@ -11,7 +12,7 @@ import L from 'leaflet'
 
 
 // =========================================================
-// HAZARD ICON
+// HAZARD COLOR
 // =========================================================
 
 const getHazardColor = (riskScore) => {
@@ -35,6 +36,11 @@ const getHazardColor = (riskScore) => {
   }
 }
 
+
+// =========================================================
+// HAZARD ICON
+// =========================================================
+
 const createHazardIcon = ({ fill, glow }) =>
   L.divIcon({
     className: 'hazard-marker',
@@ -51,6 +57,7 @@ const createHazardIcon = ({ fill, glow }) =>
     `,
 
     iconSize: [16, 16],
+
     iconAnchor: [8, 8],
   })
 
@@ -74,30 +81,77 @@ const settlementIcon = L.divIcon({
   `,
 
   iconSize: [12, 12],
+
   iconAnchor: [6, 6],
 })
 
 
 // =========================================================
-// SHELTER ICON
+// EVACUATION CENTER ICON
+//
+// NEW MARKER
+//
+// Teal circular marker + white house icon.
 // =========================================================
 
 const shelterIcon = L.divIcon({
-  className: 'shelter-marker',
+  className: 'rakshagrid-evacuation-marker',
 
   html: `
-    <div style="
-      width:15px;
-      height:15px;
-      border-radius:4px;
-      background:#10b981;
-      border:2px solid white;
-      box-shadow:0 0 12px rgba(16,185,129,.8);
-    "></div>
+    <div class="evacuation-marker-wrapper">
+
+      <div class="evacuation-marker-icon">
+
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+
+          <!-- Roof -->
+
+          <path
+            d="M3 11.5L12 4L21 11.5"
+            stroke="white"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+
+
+          <!-- House -->
+
+          <path
+            d="M5 10.5V20H19V10.5"
+            stroke="white"
+            stroke-width="2"
+            stroke-linejoin="round"
+          />
+
+
+          <!-- Door -->
+
+          <path
+            d="M9 20V14H15V20"
+            stroke="white"
+            stroke-width="2"
+            stroke-linejoin="round"
+          />
+
+        </svg>
+
+      </div>
+
+    </div>
   `,
 
-  iconSize: [15, 15],
-  iconAnchor: [7, 7],
+  iconSize: [46, 46],
+
+  iconAnchor: [23, 23],
+
+  popupAnchor: [0, -25],
 })
 
 
@@ -106,6 +160,7 @@ const shelterIcon = L.divIcon({
 // =========================================================
 
 export default function HazardMapMarkers({
+
   hazardZones = [],
 
   selectedZone,
@@ -114,6 +169,16 @@ export default function HazardMapMarkers({
 
   activeLayers = {},
 
+  // Backward compatibility with Map.jsx
+
+  showRiskZones: showRiskZonesProp,
+
+  showSettlements: showSettlementsProp,
+
+  showShelters: showSheltersProp,
+
+  showFloodExtent: showFloodExtentProp,
+
   onSelectZone,
 
   onShelterSelect,
@@ -121,6 +186,7 @@ export default function HazardMapMarkers({
   activeHoveredSite,
 
   selectedShelter,
+
 }) {
 
 
@@ -129,100 +195,157 @@ export default function HazardMapMarkers({
   // =======================================================
 
   const showRiskZones =
-    Boolean(activeLayers?.riskZones)
+    activeLayers?.riskZones != null
+      ? Boolean(activeLayers.riskZones)
+      : Boolean(showRiskZonesProp)
+
 
   const showSettlements =
-    Boolean(activeLayers?.settlements)
+    activeLayers?.settlements != null
+      ? Boolean(activeLayers.settlements)
+      : Boolean(showSettlementsProp)
+
 
   const showShelters =
-    Boolean(activeLayers?.shelters)
+    activeLayers?.shelters != null
+      ? Boolean(activeLayers.shelters)
+      : Boolean(showSheltersProp)
+
 
   const showFloodExtent =
-    Boolean(activeLayers?.floodExtent)
+    activeLayers?.floodExtent != null
+      ? Boolean(activeLayers.floodExtent)
+      : Boolean(showFloodExtentProp)
 
 
   // =======================================================
   // SELECTED ZONE COORDINATES
-  //
-  // Supports both:
-  // lat / lon
-  // latitude / longitude
   // =======================================================
 
   const selectedLat =
     selectedZone?.latitude ??
     selectedZone?.lat
 
+
   const selectedLon =
     selectedZone?.longitude ??
     selectedZone?.lon
 
-  const selectedHazardColor = getHazardColor(
-    Number(selectedZone?.compositeRiskScore ?? 0)
-  )
+
+  // =======================================================
+  // SELECTED HAZARD COLOR
+  // =======================================================
+
+  const selectedHazardColor =
+    getHazardColor(
+      Number(
+        selectedZone?.compositeRiskScore ?? 0
+      )
+    )
+
+
+  // =======================================================
+  // ORIGINAL SHELTER DATA
+  //
+  // IMPORTANT:
+  //
+  // The original RakshaGrid shelter information is stored
+  // inside:
+  //
+  // selectedZone.nearbySites
+  //
+  // Each site contains:
+  //
+  // site.total
+  // site.available
+  //
+  // Therefore:
+  //
+  // occupied = total - available
+  //
+  // We use the shelter coordinates from shelters.js but
+  // the CAPACITY DATA from nearbySites.
+  // =======================================================
+
+  const originalShelterSites =
+    Array.isArray(
+      selectedZone?.nearbySites
+    )
+      ? selectedZone.nearbySites
+      : []
 
 
   return (
     <>
 
+
       {/* =================================================
           FLOOD EXTENT
-
-          This is the visual flood-risk extent.
-          It is controlled independently by the
-          "Flood Extent" layer switch.
           ================================================= */}
 
       {showFloodExtent &&
         selectedZone &&
         selectedLat != null &&
         selectedLon != null && (
+
           <>
 
-            {/* Outer flood extent */}
+
+            {/* OUTER FLOOD EXTENT */}
 
             <Circle
               center={[
                 selectedLat,
                 selectedLon,
               ]}
+
               radius={6500}
+
               pathOptions={{
                 color: '#f97316',
+
                 weight: 1.5,
+
                 dashArray: '6 8',
+
                 fillColor: '#f97316',
+
                 fillOpacity: 0.04,
               }}
             />
 
 
-            {/* Inner flood extent */}
+            {/* INNER FLOOD EXTENT */}
 
             <Circle
               center={[
                 selectedLat,
                 selectedLon,
               ]}
+
               radius={3500}
+
               pathOptions={{
                 color: '#ef4444',
+
                 weight: 2,
+
                 dashArray: '8 8',
+
                 fillColor: '#ef4444',
+
                 fillOpacity: 0.08,
               }}
             />
 
+
           </>
+
         )}
 
 
       {/* =================================================
           RISK ZONE
-
-          Controlled by:
-          Risk Zones
           ================================================= */}
 
       {showRiskZones &&
@@ -235,12 +358,20 @@ export default function HazardMapMarkers({
               selectedLat,
               selectedLon,
             ]}
+
             radius={1800}
+
             pathOptions={{
-              color: selectedHazardColor.fill,
+              color:
+                selectedHazardColor.fill,
+
               weight: 2.5,
+
               dashArray: '8 8',
-              fillColor: selectedHazardColor.fill,
+
+              fillColor:
+                selectedHazardColor.fill,
+
               fillOpacity: 0.12,
             }}
           />
@@ -250,30 +381,39 @@ export default function HazardMapMarkers({
 
       {/* =================================================
           EVACUATION CORRIDORS
+          
+          VISUAL GUIDANCE ONLY.
 
-          These are ONLY visual guidance lines.
-
-          IMPORTANT:
-          They are NOT the OSRM route.
-
-          The actual shortest road route is produced
-          by useRoute() + RouteLayer in Map.jsx.
+          Actual routing is handled by:
+          
+          onShelterSelect()
+                ↓
+          selectedShelter
+                ↓
+             useRoute()
+                ↓
+               OSRM
+                ↓
+            RouteLayer
           ================================================= */}
 
       {showShelters &&
         selectedZone &&
         selectedLat != null &&
         selectedLon != null &&
+
         shelters
           .filter(
             (shelter) =>
               shelter.status !== 'AT_RISK'
           )
+
           .map((shelter) => {
 
             const shelterLat =
               shelter.latitude ??
               shelter.lat
+
 
             const shelterLon =
               shelter.longitude ??
@@ -289,305 +429,767 @@ export default function HazardMapMarkers({
 
 
             return (
+
               <Polyline
-                key={`evacuation-corridor-${shelter.id}`}
+
+                key={
+                  `evacuation-corridor-${shelter.id}`
+                }
+
                 positions={[
+
                   [
                     selectedLat,
                     selectedLon,
                   ],
+
                   [
                     shelterLat,
                     shelterLon,
                   ],
+
                 ]}
+
                 pathOptions={{
                   color: '#10b981',
+
                   weight: 2,
+
                   opacity: 0.35,
+
                   dashArray: '6 8',
                 }}
+
               />
+
             )
+
           })}
 
 
       {/* =================================================
-          SHELTERS
-
+          EVACUATION CENTERS
+          
           IMPORTANT:
-          Clicking a shelter calls onShelterSelect().
-
-          This reconnects the shelter to:
-
-          setSelectedShelter()
-                  ↓
-              useRoute()
-                  ↓
-                OSRM
-                  ↓
-              RouteLayer
+          
+          MARKERS = shelters.js coordinates
+          
+          CAPACITY DATA = selectedZone.nearbySites
+          
+          This keeps the original numbers.
           ================================================= */}
 
       {showShelters &&
-        shelters.map((shelter) => {
 
-          const shelterLat =
-            shelter.latitude ??
-            shelter.lat
+        shelters.map(
+          (shelter, shelterIndex) => {
 
-          const shelterLon =
-            shelter.longitude ??
-            shelter.lon
+            // =================================================
+            // SHELTER COORDINATES
+            // =================================================
 
-
-          if (
-            shelterLat == null ||
-            shelterLon == null
-          ) {
-            return null
-          }
+            const shelterLat =
+              shelter.latitude ??
+              shelter.lat
 
 
-          const isSelected =
-            selectedShelter?.id ===
-            shelter.id
+            const shelterLon =
+              shelter.longitude ??
+              shelter.lon
 
 
-          return (
-            <Marker
-              key={`shelter-${shelter.id}`}
-              position={[
-                shelterLat,
-                shelterLon,
-              ]}
-              icon={shelterIcon}
+            if (
+              shelterLat == null ||
+              shelterLon == null
+            ) {
+              return null
+            }
 
-              eventHandlers={{
-                click: () => {
-                  onShelterSelect?.(
-                    shelter
+
+            // =================================================
+            // ORIGINAL NEARBY SITE
+            //
+            // The original dashboard uses nearbySites[index].
+            //
+            // Therefore we match the marker to the original
+            // site by index.
+            // =================================================
+
+            const originalSite =
+              originalShelterSites[
+                shelterIndex
+              ]
+
+
+            // =================================================
+            // DISPLAY NAME
+            //
+            // Prefer original nearby-site name.
+            // Fall back to shelter.js name.
+            // =================================================
+
+            const displayName =
+              originalSite?.name ??
+              shelter.name ??
+              'Evacuation Center'
+
+
+            // =================================================
+            // SELECTED SHELTER
+            // =================================================
+
+            const isSelected =
+              selectedShelter?.id ===
+              shelter.id
+
+
+            // =================================================
+            // ORIGINAL CAPACITY
+            //
+            // IMPORTANT:
+            //
+            // Use site.total from the original data.
+            //
+            // Do NOT default this to 0 when original data
+            // exists.
+            // =================================================
+
+            const capacityValue =
+              originalSite?.total ??
+              originalSite?.capacity ??
+              shelter.total ??
+              shelter.capacity ??
+              shelter.totalCapacity
+
+
+            const capacity =
+              Number(
+                capacityValue ?? 0
+              )
+
+
+            // =================================================
+            // ORIGINAL AVAILABLE
+            //
+            // This is the ACTUAL remaining capacity from
+            // nearbySites.
+            // =================================================
+
+            const availableValue =
+              originalSite?.available ??
+              shelter.available ??
+              shelter.remaining ??
+              shelter.remainingCapacity
+
+
+            const available =
+              Number(
+                availableValue ?? 0
+              )
+
+
+            // =================================================
+            // OCCUPIED
+            //
+            // Original project logic:
+            //
+            // occupied = total - available
+            // =================================================
+
+            const occupied =
+              Math.max(
+                capacity - available,
+                0
+              )
+
+
+            // =================================================
+            // OCCUPANCY %
+            // =================================================
+
+            const occupancyPercent =
+              capacity > 0
+                ? Math.round(
+                    (occupied /
+                      capacity) *
+                      100
                   )
-                },
-              }}
-            >
+                : 0
 
-              {/* =================================================
-                  SHELTER NAME
-                  ================================================= */}
 
-              <Tooltip
-                direction="top"
-                offset={[
-                  0,
-                  -8,
+            // =================================================
+            // SAFE DISPLAY VALUES
+            //
+            // Prevent impossible percentages.
+            // =================================================
+
+            const safeOccupancyPercent =
+              Math.min(
+                Math.max(
+                  occupancyPercent,
+                  0
+                ),
+                100
+              )
+
+
+            return (
+
+              <Marker
+
+                key={
+                  `shelter-${shelter.id ?? shelterIndex}`
+                }
+
+                position={[
+                  shelterLat,
+                  shelterLon,
                 ]}
+
+                icon={shelterIcon}
+
+
+                eventHandlers={{
+                  click: () => {
+
+                    // Pass the original shelter object
+                    // while retaining its map coordinates.
+
+                    onShelterSelect?.(
+                      {
+                        ...shelter,
+
+                        name: displayName,
+
+                        total:
+                          originalSite?.total ??
+                          shelter.total,
+
+                        capacity,
+
+                        available,
+
+                        occupied,
+
+                      }
+                    )
+
+                  },
+                }}
+
+
+                zIndexOffset={
+                  isSelected
+                    ? 800
+                    : 500
+                }
+
               >
-                {shelter.name}
-              </Tooltip>
 
 
-              {/* =================================================
-                  SHELTER POPUP
-                  ================================================= */}
+                {/* =================================================
+                    PERMANENT SHELTER LABEL
+                    ================================================= */}
 
-              <Popup>
+                <Tooltip
 
-                <div
+                  permanent
+
+                  direction="right"
+
+                  offset={[
+                    18,
+                    0,
+                  ]}
+
                   className="
-                    text-sm
-                    font-sans
-                    text-slate-900
-                    min-w-[170px]
+                    rakshagrid-shelter-label
                   "
+
                 >
 
-                  <strong>
-                    {shelter.name}
-                  </strong>
+                  <div
+                    className="
+                      shelter-map-label
+                    "
+                  >
 
 
-                  <div className="mt-2">
-                    Capacity:{' '}
-                    {shelter.capacity ??
-                      '—'}
-                  </div>
+                    {/* SHELTER NAME */}
 
-
-                  <div>
-                    Available:{' '}
-                    {shelter.available ??
-                      '—'}
-                  </div>
-
-
-                  <div>
-                    Status:{' '}
-                    {shelter.status ||
-                      'OPERATIONAL'}
-                  </div>
-
-
-                  {isSelected && (
                     <div
                       className="
-                        mt-2
-                        pt-2
-                        border-t
-                        border-slate-300
-                        font-bold
-                        text-emerald-700
+                        shelter-map-name
                       "
                     >
-                      ROUTE SELECTED
+
+                      {displayName}
+
                     </div>
-                  )}
 
-                </div>
 
-              </Popup>
+                    {/* TYPE */}
 
-            </Marker>
-          )
-        })}
+                    <div
+                      className="
+                        shelter-map-type
+                      "
+                    >
+
+                      EVACUATION CENTER
+
+                    </div>
+
+
+                    {/* OCCUPIED / CAPACITY */}
+
+                    <div
+                      className="
+                        shelter-map-capacity
+                      "
+                    >
+
+                      {occupied}
+                      {' '}
+                      /
+                      {' '}
+                      {capacity}
+
+                    </div>
+
+
+                  </div>
+
+                </Tooltip>
+
+
+                {/* =================================================
+                    SHELTER POPUP
+                    ================================================= */}
+
+                <Popup
+
+                  className="
+                    rakshagrid-shelter-popup
+                  "
+
+                >
+
+                  <div
+                    className="
+                      shelter-popup
+                    "
+                  >
+
+
+                    {/* =================================================
+                        HEADER
+                        ================================================= */}
+
+                    <div
+                      className="
+                        shelter-popup-header
+                      "
+                    >
+
+
+                      <div
+                        className="
+                          shelter-popup-icon
+                        "
+                      >
+
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+
+                          <path
+                            d="M3 11.5L12 4L21 11.5"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+
+                          <path
+                            d="M5 10.5V20H19V10.5"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinejoin="round"
+                          />
+
+                          <path
+                            d="M9 20V14H15V20"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinejoin="round"
+                          />
+
+                        </svg>
+
+                      </div>
+
+
+                      <div>
+
+                        <div
+                          className="
+                            shelter-popup-title
+                          "
+                        >
+
+                          {displayName}
+
+                        </div>
+
+
+                        <div
+                          className="
+                            shelter-popup-subtitle
+                          "
+                        >
+
+                          EVACUATION CENTER
+
+                        </div>
+
+                      </div>
+
+
+                    </div>
+
+
+                    {/* =================================================
+                        CAPACITY INFORMATION
+                        ================================================= */}
+
+                    <div
+                      className="
+                        shelter-popup-capacity
+                      "
+                    >
+
+
+                      {/* OCCUPIED */}
+
+                      <div>
+
+                        <span>
+                          OCCUPIED
+                        </span>
+
+                        <strong>
+                          {occupied}
+                        </strong>
+
+                      </div>
+
+
+                      {/* CAPACITY */}
+
+                      <div>
+
+                        <span>
+                          CAPACITY
+                        </span>
+
+                        <strong>
+                          {capacity}
+                        </strong>
+
+                      </div>
+
+
+                      {/* AVAILABLE */}
+
+                      <div>
+
+                        <span>
+                          AVAILABLE
+                        </span>
+
+                        <strong>
+                          {available}
+                        </strong>
+
+                      </div>
+
+
+                    </div>
+
+
+                    {/* =================================================
+                        OCCUPANCY BAR
+                        ================================================= */}
+
+                    <div
+                      className="
+                        shelter-popup-progress
+                      "
+                    >
+
+                      <div
+
+                        className="
+                          shelter-popup-progress-fill
+                        "
+
+                        style={{
+                          width:
+                            `${safeOccupancyPercent}%`,
+                        }}
+
+                      />
+
+                    </div>
+
+
+                    {/* =================================================
+                        FOOTER
+                        ================================================= */}
+
+                    <div
+                      className="
+                        shelter-popup-footer
+                      "
+                    >
+
+                      <span>
+
+                        {safeOccupancyPercent}%
+                        {' '}
+                        occupied
+
+                      </span>
+
+
+                      <span>
+
+                        {available}
+                        {' '}
+                        spaces available
+
+                      </span>
+
+                    </div>
+
+
+                    {/* =================================================
+                        SELECTED SHELTER
+                        ================================================= */}
+
+                    {isSelected && (
+
+                      <div
+                        className="
+                          shelter-popup-selected
+                        "
+                      >
+
+                        ROUTE SELECTED
+
+                      </div>
+
+                    )}
+
+
+                  </div>
+
+                </Popup>
+
+
+              </Marker>
+
+            )
+
+          }
+
+        )}
 
 
       {/* =================================================
           SETTLEMENTS
-
-          These are the existing hazard-zone /
-          settlement markers.
           ================================================= */}
 
       {showSettlements &&
-        hazardZones.map((zone) => {
 
-          const zoneLat =
-            zone.latitude ??
-            zone.lat ??
-            zone.coordinates?.[1]
+        hazardZones.map(
+          (zone) => {
 
-          const zoneLon =
-            zone.longitude ??
-            zone.lon ??
-            zone.lng ??
-            zone.coordinates?.[0]
+            const zoneLat =
+              zone.latitude ??
+              zone.lat ??
+              zone.coordinates?.[1]
 
 
-          if (
-            zoneLat == null ||
-            zoneLon == null
-          ) {
-            return null
-          }
+            const zoneLon =
+              zone.longitude ??
+              zone.lon ??
+              zone.lng ??
+              zone.coordinates?.[0]
 
 
-          return (
-            <Marker
-              key={`settlement-${zone.id}`}
-              position={[
-                zoneLat,
-                zoneLon,
-              ]}
-              icon={settlementIcon}
+            if (
+              zoneLat == null ||
+              zoneLon == null
+            ) {
+              return null
+            }
 
-              eventHandlers={{
-                click: () => {
-                  onSelectZone?.(
-                    zone
-                  )
-                },
-              }}
-            >
 
-              <Tooltip
-                direction="top"
+            return (
+
+              <Marker
+
+                key={
+                  `settlement-${zone.id}`
+                }
+
+                position={[
+                  zoneLat,
+                  zoneLon,
+                ]}
+
+                icon={settlementIcon}
+
+
+                eventHandlers={{
+                  click: () => {
+
+                    onSelectZone?.(
+                      zone
+                    )
+
+                  },
+                }}
+
               >
-                {zone.name}
-              </Tooltip>
 
 
-              <Popup>
-
-                <div
-                  className="
-                    text-sm
-                    font-sans
-                    text-slate-900
-                    min-w-[170px]
-                  "
+                <Tooltip
+                  direction="top"
                 >
 
-                  <strong>
-                    {zone.name}
-                  </strong>
+                  {zone.name}
+
+                </Tooltip>
 
 
-                  <div className="mt-2">
-                    Population:{' '}
-                    {zone.population != null
-                      ? zone.population.toLocaleString()
-                      : '—'}
+                <Popup>
+
+                  <div
+                    className="
+                      text-sm
+                      font-sans
+                      text-slate-900
+                      min-w-[170px]
+                    "
+                  >
+
+
+                    <strong>
+                      {zone.name}
+                    </strong>
+
+
+                    <div className="mt-2">
+
+                      Population:{' '}
+
+                      {zone.population != null
+                        ? zone.population.toLocaleString()
+                        : '—'}
+
+                    </div>
+
+
+                    <div>
+
+                      Vulnerable:{' '}
+
+                      {zone.vulnerablePopulation != null
+                        ? zone.vulnerablePopulation.toLocaleString()
+                        : '—'}
+
+                    </div>
+
+
+                    <div>
+
+                      Risk:{' '}
+
+                      {zone.compositeRiskScore ??
+                        '—'}
+
+                    </div>
+
+
                   </div>
 
-
-                  <div>
-                    Vulnerable:{' '}
-                    {zone.vulnerable != null
-                      ? zone.vulnerable.toLocaleString()
-                      : '—'}
-                  </div>
+                </Popup>
 
 
-                  <div>
-                    Risk:{' '}
-                    {zone.compositeRiskScore ??
-                      '—'}
-                  </div>
+              </Marker>
 
-                </div>
+            )
 
-              </Popup>
+          }
 
-            </Marker>
-          )
-        })}
+        )}
 
 
       {/* =================================================
           SELECTED HAZARD MARKER
-
-          This preserves a distinct severity-colored hazard
-          marker for the currently selected settlement/zone.
           ================================================= */}
 
       {showRiskZones &&
+
         selectedZone &&
+
         selectedLat != null &&
+
         selectedLon != null && (
 
           <Marker
+
             position={[
               selectedLat,
               selectedLon,
             ]}
-            icon={createHazardIcon(selectedHazardColor)}
+
+            icon={
+              createHazardIcon(
+                selectedHazardColor
+              )
+            }
+
             zIndexOffset={1000}
+
           >
 
             <Tooltip
+
               direction="top"
+
               offset={[
                 0,
                 -10,
               ]}
+
             >
+
               ACTIVE HAZARD ZONE
+
             </Tooltip>
 
           </Marker>
 
         )}
+
 
     </>
   )

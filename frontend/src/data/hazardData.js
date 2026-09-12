@@ -58,8 +58,8 @@ export const hazardZones = [
       soilDrainage: { label: 'Soil Drainage Capacity', value: 38, tag: 'Low' },
     },
     nearbySites: [
-      { name: 'Mayong Higher Secondary Shelter', tag: 'Shelter Site • M-01', distanceKm: 6.8, etaMin: 15, available: 310, total: 450, suitability: 'High', lat: 26.160, lon: 92.245 },
-      { name: 'Jagiroad Relief Camp', tag: 'Relief Camp • R-04', distanceKm: 15.2, etaMin: 33, available: 620, total: 1000, suitability: 'Moderate', lat: 26.118, lon: 92.342 },
+      { name: 'Mayong Higher Secondary Shelter', tag: 'Shelter Site ', distanceKm: 6.8, etaMin: 15, available: 310, total: 450, suitability: 'High', lat: 26.160, lon: 92.245 },
+      { name: 'Jagiroad Relief Camp', tag: 'Relief Camp ', distanceKm: 15.2, etaMin: 33, available: 620, total: 1000, suitability: 'Moderate', lat: 26.118, lon: 92.342 },
     ],
   },
   {
@@ -86,7 +86,7 @@ export const hazardZones = [
       soilDrainage: { label: 'Soil Drainage Capacity', value: 55, tag: 'Moderate' },
     },
     nearbySites: [
-      { name: 'Laharighat Community Hall', tag: 'Shelter Site • L-02', distanceKm: 4.1, etaMin: 10, available: 180, total: 250, suitability: 'High', lat: 26.290, lon: 92.435 },
+      { name: 'Laharighat Community Hall', tag: 'Shelter Site ', distanceKm: 4.1, etaMin: 10, available: 180, total: 250, suitability: 'High', lat: 26.290, lon: 92.435 },
     ],
   },
 ]

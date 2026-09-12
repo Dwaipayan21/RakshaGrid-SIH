@@ -7,8 +7,6 @@ import React, {
 import {
   MapContainer,
   TileLayer,
-  Marker,
-  Popup,
   ZoomControl,
 } from 'react-leaflet'
 
@@ -32,6 +30,7 @@ const Map = ({
   selectedZone,
   onSelectZone,
   activeHoveredSite,
+
   mapLayers = {
     riskZones: true,
     settlements: true,
@@ -42,18 +41,31 @@ const Map = ({
   },
 }) => {
 
+  // =========================================================
+  // SELECTED SHELTER
+  // =========================================================
+
   const [
     selectedShelter,
     setSelectedShelter,
   ] = useState(null)
 
 
-  // Clear selected shelter if Shelters layer is toggled off
+  // =========================================================
+  // CLEAR SELECTED SHELTER WHEN SHELTER LAYER IS OFF
+  // =========================================================
+
   useEffect(() => {
+
     if (!mapLayers?.shelters) {
+
       setSelectedShelter(null)
+
     }
-  }, [mapLayers?.shelters])
+
+  }, [
+    mapLayers?.shelters,
+  ])
 
 
   // =========================================================
@@ -83,8 +95,11 @@ const Map = ({
       hazardLat == null ||
       hazardLon == null
     ) {
+
       return null
+
     }
+
 
     return [
       hazardLat,
@@ -104,12 +119,35 @@ const Map = ({
   const routeEnd = useMemo(() => {
 
     if (!selectedShelter) {
+
       return null
+
     }
 
+
+    const shelterLat =
+      selectedShelter.latitude ??
+      selectedShelter.lat
+
+
+    const shelterLon =
+      selectedShelter.longitude ??
+      selectedShelter.lon
+
+
+    if (
+      shelterLat == null ||
+      shelterLon == null
+    ) {
+
+      return null
+
+    }
+
+
     return [
-      selectedShelter.latitude,
-      selectedShelter.longitude,
+      shelterLat,
+      shelterLon,
     ]
 
   }, [
@@ -182,6 +220,41 @@ const Map = ({
 
 
   // =========================================================
+  // CENSUS DATA
+  //
+  // IMPORTANT:
+  //
+  // These values come from the selected hazard zone.
+  //
+  // Population:
+  //     selectedZone.population
+  //
+  // Households:
+  //     selectedZone.households
+  //
+  // If households is unavailable, use the same existing
+  // RakshaGrid fallback:
+  //
+  //     Math.ceil(population / 5)
+  // =========================================================
+
+  const censusPopulation =
+    selectedZone?.population != null
+      ? Number(selectedZone.population)
+      : null
+
+
+  const censusHouseholds =
+    selectedZone?.households != null
+      ? Number(selectedZone.households)
+      : censusPopulation != null
+        ? Math.ceil(
+            censusPopulation / 5
+          )
+        : null
+
+
+  // =========================================================
   // RENDER
   // =========================================================
 
@@ -199,12 +272,11 @@ const Map = ({
 
       {/* =====================================================
           LEAFLET POPUP PRIORITY
-          Keeps evacuation-center details above map controls
-          and the Morigaon pilot selector.
           ===================================================== */}
 
       <style>
         {`
+
           .leaflet-popup-pane {
             z-index: 2000 !important;
           }
@@ -220,9 +292,14 @@ const Map = ({
           .leaflet-popup-tip {
             z-index: 2000 !important;
           }
+
         `}
       </style>
 
+
+      {/* =====================================================
+          MAP
+          ===================================================== */}
 
       <MapContainer
 
@@ -315,7 +392,14 @@ const Map = ({
 
 
         {/* ===================================================
-            HAZARD MARKERS
+            ALL HAZARD / SETTLEMENT / SHELTER MARKERS
+          
+            IMPORTANT:
+          
+            HazardMapMarkers now owns the shelter markers.
+          
+            This prevents the OLD shelter marker system from
+            rendering a second popup.
             =================================================== */}
 
         <HazardMapMarkers
@@ -328,6 +412,14 @@ const Map = ({
             selectedZone
           }
 
+          shelters={
+            shelters
+          }
+
+          activeLayers={
+            mapLayers
+          }
+
           onSelectZone={
             onSelectZone
           }
@@ -336,192 +428,38 @@ const Map = ({
             activeHoveredSite
           }
 
-          activeLayers={
-            mapLayers
+          selectedShelter={
+            selectedShelter
+          }
+
+          onShelterSelect={
+            (shelter) => {
+
+              console.log(
+                'Shelter selected:',
+                shelter?.name
+              )
+
+              console.log(
+                'Route start:',
+                hazardLat,
+                hazardLon
+              )
+
+              console.log(
+                'Route end:',
+                shelter?.latitude,
+                shelter?.longitude
+              )
+
+              setSelectedShelter(
+                shelter
+              )
+
+            }
           }
 
         />
-
-
-        {/* ===================================================
-            EVACUATION CENTERS / SHELTERS
-            =================================================== */}
-
-        {mapLayers?.shelters &&
-          shelters.map(
-            (shelter) => (
-
-              <Marker
-
-                key={
-                  shelter.id
-                }
-
-                position={[
-                  shelter.latitude,
-                  shelter.longitude,
-                ]}
-
-                eventHandlers={{
-                  click: () => {
-
-                    console.log(
-                      'Shelter clicked:',
-                      shelter.name
-                    )
-
-                    console.log(
-                      'Route start:',
-                      hazardLat,
-                      hazardLon
-                    )
-
-                    console.log(
-                      'Route end:',
-                      shelter.latitude,
-                      shelter.longitude
-                    )
-
-                    setSelectedShelter(
-                      shelter
-                    )
-
-                  },
-                }}
-
-              >
-
-                <Popup
-                  autoPan={true}
-                  autoPanPaddingTopLeft={[
-                    40,
-                    100,
-                  ]}
-                  autoPanPaddingBottomRight={[
-                    40,
-                    40,
-                  ]}
-                  closeButton={true}
-                >
-
-                  <div
-                    className="
-                      min-w-[220px]
-                      font-mono
-                      text-sm
-                    "
-                  >
-
-                    {/* ================================
-                        SHELTER NAME
-                        ================================ */}
-
-                    <div
-                      className="
-                        text-base
-                        font-bold
-                        mb-2
-                      "
-                    >
-                      {shelter.name}
-                    </div>
-
-
-                    {/* ================================
-                        BASIC INFORMATION
-                        ================================ */}
-
-                    <div>
-                      Type:{' '}
-                      {shelter.type}
-                    </div>
-
-                    <div>
-                      District:{' '}
-                      {shelter.district}
-                    </div>
-
-                    <div>
-                      Circle:{' '}
-                      {shelter.circle}
-                    </div>
-
-                    <div>
-                      Status:{' '}
-                      {shelter.status}
-                    </div>
-
-
-                    <hr
-                      className="
-                        my-2
-                        border-slate-300
-                      "
-                    />
-
-
-                    {/* ================================
-                        CAPACITY
-                        ================================ */}
-
-                    <div>
-                      Capacity:{' '}
-                      {shelter.capacity}
-                    </div>
-
-                    <div>
-                      Available:{' '}
-                      {shelter.availableCapacity}
-                    </div>
-
-
-                    <hr
-                      className="
-                        my-2
-                        border-slate-300
-                      "
-                    />
-
-
-                    {/* ================================
-                        CENSUS INTELLIGENCE
-                        ================================ */}
-
-                    <div
-                      className="
-                        font-bold
-                        mb-1
-                      "
-                    >
-                      CENSUS INTELLIGENCE
-                    </div>
-
-                    <div>
-                      Evacuation Zone:
-                      {' '}
-                      {shelter.name}
-                    </div>
-
-                    <div>
-                      Population data:
-                      {' '}
-                      Available
-                    </div>
-
-                    <div>
-                      Household data:
-                      {' '}
-                      Available
-                    </div>
-
-                  </div>
-
-                </Popup>
-
-              </Marker>
-
-            )
-          )}
 
 
         {/* ===================================================
@@ -538,6 +476,7 @@ const Map = ({
 
           )
         }
+
 
       </MapContainer>
 
@@ -613,6 +552,29 @@ const Map = ({
 
         )
       }
+
+
+      {/* =====================================================
+          CENSUS DEBUG INFORMATION
+          
+          This is intentionally hidden.
+          
+          It allows us to verify the actual values in the
+          browser console without changing the UI.
+          ===================================================== */}
+
+      {/*
+        console.log(
+          'Census population:',
+          censusPopulation
+        )
+
+        console.log(
+          'Census households:',
+          censusHouseholds
+        )
+      */}
+
 
     </div>
 

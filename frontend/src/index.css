@@ -413,7 +413,387 @@ html.light .disaster-area-status-card .legend-subtext {
   border: none !important;
   box-shadow: none !important;
 }
+/* =========================================================
+   RAKSHAGRID EVACUATION CENTER MARKER
+   ========================================================= */
 
+.rakshagrid-evacuation-marker {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+
+.evacuation-marker-wrapper {
+  width: 46px;
+  height: 46px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  pointer-events: auto;
+}
+
+
+.evacuation-marker-icon {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: rgba(5, 150, 105, 0.96);
+
+  border: 2px solid #2dd4bf;
+
+  box-shadow:
+    0 0 0 4px rgba(20, 184, 166, 0.16),
+    0 0 18px rgba(20, 184, 166, 0.65);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  cursor: pointer;
+}
+
+
+.evacuation-marker-icon:hover {
+  transform: scale(1.12);
+
+  box-shadow:
+    0 0 0 5px rgba(20, 184, 166, 0.22),
+    0 0 25px rgba(20, 184, 166, 0.85);
+}
+
+
+/* =========================================================
+   PERMANENT EVACUATION CENTER LABEL
+   ========================================================= */
+
+.rakshagrid-shelter-label {
+  background: transparent !important;
+
+  border: none !important;
+
+  box-shadow: none !important;
+
+  padding: 0 !important;
+
+  margin: 0 !important;
+}
+
+
+.rakshagrid-shelter-label::before {
+  display: none !important;
+}
+
+
+.shelter-map-label {
+  min-width: 145px;
+
+  padding: 8px 11px;
+
+  border-radius: 7px;
+
+  background: rgba(7, 20, 38, 0.96);
+
+  border: 1px solid rgba(45, 212, 191, 0.30);
+
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.35);
+
+  pointer-events: none;
+
+  user-select: none;
+}
+
+
+.shelter-map-name {
+  color: #f8fafc;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  line-height: 1.25;
+
+  white-space: nowrap;
+}
+
+
+.shelter-map-type {
+  margin-top: 2px;
+
+  color: #5eead4;
+
+  font-size: 8px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+
+  white-space: nowrap;
+}
+
+
+.shelter-map-capacity {
+  margin-top: 4px;
+
+  color: #cbd5e1;
+
+  font-size: 9px;
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   EVACUATION CENTER POPUP
+   ========================================================= */
+
+.rakshagrid-shelter-popup .leaflet-popup-content-wrapper {
+  background: #0b1628;
+
+  color: #e2e8f0;
+
+  border:
+    1px solid rgba(45, 212, 191, 0.35);
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 10px 35px rgba(0, 0, 0, 0.45);
+}
+
+
+.rakshagrid-shelter-popup .leaflet-popup-tip {
+  background: #0b1628;
+}
+
+
+.rakshagrid-shelter-popup .leaflet-popup-content {
+  margin: 0;
+}
+
+
+/* =========================================================
+   POPUP CONTENT
+   ========================================================= */
+
+.shelter-popup {
+  width: 250px;
+
+  padding: 14px;
+
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+
+/* =========================================================
+   POPUP HEADER
+   ========================================================= */
+
+.shelter-popup-header {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin-bottom: 14px;
+}
+
+
+.shelter-popup-icon {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  color: #5eead4;
+
+  background:
+    rgba(20, 184, 166, 0.14);
+
+  border:
+    1px solid rgba(45, 212, 191, 0.40);
+
+  flex-shrink: 0;
+}
+
+
+.shelter-popup-title {
+  font-size: 14px;
+
+  font-weight: 800;
+
+  color: #f8fafc;
+
+  line-height: 1.25;
+}
+
+
+.shelter-popup-subtitle {
+  margin-top: 2px;
+
+  font-size: 9px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.12em;
+
+  color: #5eead4;
+}
+
+
+/* =========================================================
+   CAPACITY CARDS
+   ========================================================= */
+
+.shelter-popup-capacity {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 8px;
+
+  margin-bottom: 12px;
+}
+
+
+.shelter-popup-capacity > div {
+  padding: 8px;
+
+  border-radius: 8px;
+
+  background:
+    rgba(30, 41, 59, 0.75);
+
+  border:
+    1px solid rgba(71, 85, 105, 0.45);
+}
+
+
+.shelter-popup-capacity span {
+  display: block;
+
+  font-size: 8px;
+
+  font-weight: 700;
+
+  color: #94a3b8;
+
+  margin-bottom: 3px;
+}
+
+
+.shelter-popup-capacity strong {
+  display: block;
+
+  font-size: 14px;
+
+  color: #f8fafc;
+}
+
+
+/* =========================================================
+   OCCUPANCY BAR
+   ========================================================= */
+
+.shelter-popup-progress {
+  height: 6px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background: #1e293b;
+}
+
+
+.shelter-popup-progress-fill {
+  height: 100%;
+
+  border-radius: 999px;
+
+  background: #10b981;
+
+  box-shadow:
+    0 0 8px rgba(16, 185, 129, 0.60);
+
+  transition:
+    width 0.3s ease;
+}
+
+
+/* =========================================================
+   POPUP FOOTER
+   ========================================================= */
+
+.shelter-popup-footer {
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 8px;
+
+  margin-top: 7px;
+
+  font-size: 9px;
+
+  color: #94a3b8;
+}
+
+
+/* =========================================================
+   SELECTED SHELTER
+   ========================================================= */
+
+.shelter-popup-selected {
+  margin-top: 12px;
+
+  padding-top: 9px;
+
+  border-top:
+    1px solid rgba(148, 163, 184, 0.20);
+
+  color: #34d399;
+
+  font-size: 9px;
+
+  font-weight: 800;
+
+  letter-spacing: 0.08em;
+}
 
 
 
