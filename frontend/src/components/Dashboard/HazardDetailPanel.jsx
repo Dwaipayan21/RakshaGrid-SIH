@@ -1,51 +1,5 @@
 import React, { useState } from 'react'
 
-const iconDeck = [
-  {
-    key: 'topo',
-    label: 'Elev',
-    color: 'sky',
-    title: 'Corridor Topography & Surge Clearance',
-    path: 'M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z',
-  },
-  {
-    key: 'convoy',
-    label: 'Route',
-    color: 'amber',
-    title: 'Convoy Execution Segments (3 Checkpoints)',
-    path: 'M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7',
-  },
-  {
-    key: 'telemetry',
-    label: 'Supp',
-    color: 'emerald',
-    title: 'Essential On-Site Telemetry (Filtration, Power, Meds)',
-    path: 'M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z',
-  },
-  {
-    key: 'matrix',
-    label: 'Matrix',
-    color: 'purple',
-    title: 'Decision Matrix & Criteria Assessment',
-    path: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
-  },
-  {
-    key: 'params',
-    label: 'Config',
-    color: 'slate',
-    title: 'Overrides & Audit Log',
-    path: 'M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4',
-  },
-]
-
-const colorClasses = {
-  sky: 'text-sky-400 hover:border-sky-400',
-  amber: 'text-amber-400 hover:border-amber-400',
-  emerald: 'text-emerald-400 hover:border-emerald-400',
-  purple: 'text-purple-400 hover:border-purple-400',
-  slate: 'text-slate-400 hover:border-slate-300',
-}
-
 const initialProtocols = [
   {
     id: 'P-01',
@@ -86,7 +40,6 @@ const HazardDetailPanel = ({
   riskAssessment,
   riskLoading,
   riskError,
-  onOpenDrawer = () => {},
   activeHoveredSite,
   setActiveHoveredSite = () => {},
 }) => {
@@ -414,33 +367,58 @@ const priorityAction = isCritical
         </div>
       </div>
 
-      {/* 4. Quick Secondary Icon Deck Navigation (Elev, Route, Supp, Matrix, Config) */}
+      {/* 4. Priority Tier */}
       <div
-        className="bg-tactical-surface border border-tactical-border p-3.5 rounded-2xl flex items-center justify-between gap-1 shadow-lg shrink-0"
-        data-purpose="secondary-action-deck"
+        className="bg-tactical-surface border border-tactical-border p-3.5 rounded-2xl shadow-lg shrink-0"
+        data-purpose="priority-tier-panel"
       >
-        {iconDeck.map((icon) => (
-          <button
-            key={icon.key}
-            onClick={() => onOpenDrawer(icon.key)}
-            title={icon.title}
-            className={`w-12 h-12 rounded-xl bg-tactical-card hover:bg-tactical-cardHover border border-tactical-border flex flex-col items-center justify-center transition group relative ${
-              colorClasses[icon.color]
-            }`}
-          >
-            <svg
-              className="w-5 h-5 transition group-hover:scale-110"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d={icon.path} strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-            </svg>
-            <span className="text-[9px] font-mono text-slate-400 mt-0.5 group-hover:text-slate-200">
-              {icon.label}
-            </span>
-          </button>
-        ))}
+        {(() => {
+          const villageName = zone.name.split(' ')[0]
+          const priorityByVillage = {
+            Bhuragaon: {
+              label: 'P1 Immediate',
+              color: 'text-red-400',
+              border: 'border-red-500/30',
+            },
+            Mayong: {
+              label: 'P2 Prepare',
+              color: 'text-amber-400',
+              border: 'border-amber-500/30',
+            },
+            Laharighat: {
+              label: 'P3 Monitor',
+              color: 'text-emerald-400',
+              border: 'border-emerald-500/30',
+            },
+          }
+          const priority = priorityByVillage[villageName] || {
+            label: 'Unassigned',
+            color: 'text-slate-400',
+            border: 'border-tactical-border',
+          }
+
+          return (
+            <div className={`rounded-xl bg-tactical-card border ${priority.border} px-4 py-3`}>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">
+                  Priority Tier
+                </span>
+                <span className="text-[10px] font-mono text-slate-500 uppercase">
+                  {villageName}
+                </span>
+              </div>
+              <div className={`mt-1 text-xl font-mono font-extrabold ${priority.color}`}>
+                {priority.label}
+              </div>
+              <div className="mt-2 pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] font-mono">
+                <span className="text-slate-400 uppercase">Risk Score</span>
+                <span className={`font-bold ${priority.color}`}>
+                  {Number(zone.compositeRiskScore).toFixed(2)} / 1.0
+                </span>
+              </div>
+            </div>
+          )
+        })()}
       </div>
 
       {/* 5. Action Protocols Segment (Directly Below Elev, Route, Supp Deck) */}
