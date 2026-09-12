@@ -25,6 +25,7 @@ const TopNav = ({ theme = 'dark', onToggleTheme = () => {} }) => {
   const [open, setOpen] = useState(false)
   const dropdownRef = useRef(null)
 
+  const [selectedHazard, setSelectedHazard] = useState('Flood');
   const [hazard, setHazard] = useState(HAZARDS[0]);
   const [hazardOpen, setHazardOpen] = useState(false);
   const hazardRef = useRef(null);
@@ -79,17 +80,37 @@ const TopNav = ({ theme = 'dark', onToggleTheme = () => {} }) => {
 
         {/* Live Location & Surge Alert Indicator */}
         <div className="hidden lg:flex items-center space-x-3 text-xs">
+          <div className="relative">
+            <label htmlFor="hazard-type" className="sr-only">
+              Hazard type
+            </label>
+            <select
+              id="hazard-type"
+              value={selectedHazard}
+              onChange={(event) => setSelectedHazard(event.target.value)}
+              className="appearance-none rounded bg-tactical-card border border-tactical-border pl-2.5 pr-7 py-1 text-slate-200 font-semibold tracking-wide cursor-pointer focus:outline-none focus:border-cyan-400"
+            >
+              <option>Flood</option>
+              <option>Earthquake</option>
+              <option>Landslide</option>
+              <option>Cyclone</option>
+            </select>
+            <svg
+              className="pointer-events-none absolute right-2 top-1/2 w-3 h-3 -translate-y-1/2 text-slate-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+            </svg>
+          </div>
+
           <div className="flex items-center space-x-2 px-2.5 py-1 rounded bg-tactical-card border border-tactical-border">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
             <span className="text-red-400 font-semibold tracking-wide uppercase">
               Red Alert: Morigaon Sector
             </span>
           </div>
-          {/* <span className="text-slate-400 font-mono">Assam Pilot / Revenue Circles</span> */}
-          {/* <span className="text-slate-500 font-mono">|</span>
-          <span className="text-slate-400 font-mono">
-            RUN-ID: <span className="text-slate-200">RG-8842-AX</span>
-          </span> */}
         </div>
       </div>
 
